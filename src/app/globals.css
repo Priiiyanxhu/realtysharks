@@ -1,13 +1,13 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-primary: #0f172a; /* Slate 900 */
-  --color-brand-accent: #1e40af; /* Blue 800 */
-  --color-brand-gold: #b45309; /* Amber 700 / Bronze */
+  --color-brand-primary: #0B1120; /* Midnight Slate */
+  --color-brand-accent: #D4AF37; /* Champagne Gold */
+  --color-brand-gold: #FACC15; /* Bright Gold */
 }
 
 :root {
-  --background: #050505;
+  --background: #0B1120;
   --foreground: #ffffff;
   
   /* Capacitor / Mobile Safe Areas */

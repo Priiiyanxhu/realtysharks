@@ -10,6 +10,7 @@ export function GlobalLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
+  const [userProfile, setUserProfile] = useState<any>(null);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -23,7 +24,7 @@ export function GlobalLayout({ children }: { children: React.ReactNode }) {
         // Verify profile exists and is complete (routing guard)
         const { data: profile } = await supabase
           .from("profiles")
-          .select("agency_name")
+          .select("*")
           .eq("auth_id", session.user.id)
           .single();
 
@@ -32,6 +33,7 @@ export function GlobalLayout({ children }: { children: React.ReactNode }) {
           return;
         }
 
+        setUserProfile(profile);
         setIsAuthenticated(true);
       } catch (error) {
         console.error("Auth Guard Error:", error);
@@ -46,8 +48,8 @@ export function GlobalLayout({ children }: { children: React.ReactNode }) {
 
   if (isChecking) {
     return (
-      <div className="min-h-[100dvh] flex items-center justify-center bg-[#050505]">
-        <Loader2 className="w-8 h-8 text-emerald-500 animate-spin" />
+      <div className="min-h-[100dvh] flex items-center justify-center bg-[#0B1120]">
+        <Loader2 className="w-8 h-8 text-[#D4AF37] animate-spin" />
       </div>
     );
   }
@@ -64,41 +66,84 @@ export function GlobalLayout({ children }: { children: React.ReactNode }) {
   ];
 
   return (
-    <div className="flex min-h-[100dvh] w-full bg-[#050505] text-white overflow-x-hidden">
+    <div className="flex min-h-[100dvh] w-full bg-[#0B1120] text-white overflow-x-hidden font-sans">
       
-      {/* Desktop Persistent Sidebar (Floating Pill) */}
-      <aside className="hidden md:flex flex-col fixed left-6 top-6 bottom-6 w-64 rounded-[2rem] border border-white/20 bg-black/30 backdrop-blur-3xl z-50 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]">
-        <div className="p-8 pb-4 flex justify-between items-center">
-          <h1 className="text-xl font-bold tracking-tight text-white">RealtySharks</h1>
-          <button className="relative p-2 text-white/50 hover:text-white transition-colors" title="Notifications">
-            <Bell className="w-5 h-5" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-[#0a0f16]"></span>
-          </button>
+      {/* Desktop Persistent Sidebar (Full Height) */}
+      <aside className="hidden md:flex flex-col fixed left-0 top-0 bottom-0 w-72 bg-[#0B1120] border-r border-white/5 z-50">
+        <div className="p-8 pb-6 flex flex-col items-start border-b border-white/5">
+          <span className="text-[10px] font-bold tracking-[0.2em] text-[#D4AF37] uppercase mb-4">B2B Real Estate OS</span>
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-8 h-8 bg-[#D4AF37] text-[#0B1120] font-black flex items-center justify-center text-lg leading-none transform -skew-x-12">
+              E
+            </div>
+          </div>
+          <h1 className="text-2xl font-black tracking-tighter text-white">
+            REALTY<span className="text-[#D4AF37]">SHARKS</span><span className="text-[10px] align-top text-white/50 ml-0.5">TM</span>
+          </h1>
         </div>
-        <nav className="flex-1 px-4 space-y-2 mt-4">
-          {navItems.map((item) => {
+
+        {/* Agent Identity Card */}
+        <div className="px-6 py-6 border-b border-white/5">
+          <div className="bg-[#121A2F] rounded-2xl p-4 flex items-center gap-3 border border-white/5 shadow-lg relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1 h-full bg-[#D4AF37]" />
+            <div className="w-10 h-10 rounded-full bg-slate-800 border border-white/10 overflow-hidden shrink-0">
+              {userProfile?.avatar_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={userProfile.avatar_url} alt="Agent" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-white/50 font-bold">
+                  {(userProfile?.full_name || "A").charAt(0)}
+                </div>
+              )}
+            </div>
+            <div className="overflow-hidden">
+              <p className="text-[9px] uppercase tracking-widest text-[#D4AF37] font-bold mb-0.5">Agent Identity</p>
+              <h3 className="text-sm font-semibold text-white truncate">{userProfile?.full_name}</h3>
+              <p className="text-xs text-white/50 truncate uppercase">{userProfile?.role || 'Broker'}</p>
+            </div>
+          </div>
+        </div>
+
+        <nav className="flex-1 px-4 space-y-1 mt-6">
+          {navItems.map((item, index) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
             return (
               <button
                 key={item.name}
                 onClick={() => router.push(item.href)}
-                className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 ${
+                className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl transition-all duration-300 group ${
                   isActive 
-                    ? "bg-white/10 text-white shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]" 
-                    : "text-white/50 hover:bg-white/5 hover:text-white"
+                    ? "bg-[#D4AF37]/10 text-[#D4AF37]" 
+                    : "text-white/40 hover:text-white hover:bg-white/5"
                 }`}
               >
-                <Icon className="w-5 h-5" />
-                <span className="font-medium">{item.name}</span>
+                <div className="flex items-center gap-3">
+                  <Icon className={`w-4 h-4 ${isActive ? "text-[#D4AF37]" : "group-hover:text-white"}`} />
+                  <span className={`font-semibold tracking-wide ${isActive ? "text-white" : ""}`}>{item.name.toUpperCase()}</span>
+                </div>
+                <span className="text-[10px] font-mono opacity-30">0{index + 1}</span>
               </button>
             );
           })}
         </nav>
+
+        <div className="p-6">
+          <button 
+            onClick={async () => {
+              await supabase.auth.signOut();
+              router.push('/login');
+            }}
+            className="w-full flex items-center gap-3 px-4 py-3 text-white/40 hover:text-white hover:bg-white/5 rounded-xl transition-colors font-semibold tracking-wide uppercase"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+            Logout
+          </button>
+        </div>
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 md:ml-[19rem] relative pb-[calc(100px+env(safe-area-inset-bottom))] md:pb-0">
+      <main className="flex-1 md:ml-72 relative pb-[calc(100px+env(safe-area-inset-bottom))] md:pb-0">
         {children}
       </main>
 

@@ -85,9 +85,9 @@ export function MarketPulse() {
       diffuse: 1.2,
       mapSamples: 16000,
       mapBrightness: 6,
-      baseColor: [0.05, 0.05, 0.05],
-      markerColor: [0.06, 0.72, 0.50], // Emerald Green #10B981 equivalent
-      glowColor: [0.1, 0.1, 0.15],
+      baseColor: [0.04, 0.06, 0.12], // Midnight Slate equivalent
+      markerColor: [0.83, 0.68, 0.21], // Champagne Gold #D4AF37
+      glowColor: [0.15, 0.12, 0.04], // Goldish glow
       markers: [
         { location: [28.6139, 77.2090], size: 0.08 }, // Delhi
         { location: [19.0760, 72.8777], size: 0.1 },  // Mumbai
@@ -111,37 +111,43 @@ export function MarketPulse() {
   }, []);
 
   return (
-    <GlassCard 
-      className="relative overflow-hidden w-full h-[300px] flex items-center justify-between p-6 cursor-pointer hover:border-emerald-500/50 transition-all duration-500 group"
+    <div 
+      className="relative overflow-hidden w-full h-[400px] flex flex-col justify-between p-8 cursor-pointer border border-white/5 hover:border-[#D4AF37]/50 bg-[#0B1120] rounded-3xl transition-all duration-500 group shadow-2xl"
       onClick={() => router.push('/network')}
     >
-      
-      {/* Metrics Overlay */}
-      <div className="relative z-10 flex flex-col justify-between h-full w-1/2">
-        <div className="space-y-1 group-hover:-translate-y-1 transition-transform duration-500">
-          <h2 className="text-2xl font-light text-white tracking-tight">Market <span className="font-semibold">Pulse</span></h2>
-          <p className="text-sm text-white/50">Live Institutional Network</p>
+      {/* Decorative scanning line */}
+      <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent opacity-0 group-hover:opacity-100 group-hover:animate-pulse transition-opacity" />
+
+      {/* Top Header */}
+      <div className="relative z-10 flex justify-between items-start w-full">
+        <div>
+          <p className="text-[10px] text-[#D4AF37] font-bold tracking-[0.2em] uppercase mb-1 flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-pulse" />
+            Synapse Engine Active
+          </p>
+          <h2 className="text-2xl font-black text-white tracking-tighter uppercase">RealtySharks Sphere</h2>
         </div>
-        
-        <div className="flex gap-8 group-hover:-translate-y-1 transition-transform duration-500 delay-75">
-          <div className="space-y-1">
-            <span className="block text-[10px] uppercase tracking-wider text-white/40 font-semibold">Active Brokers</span>
-            <span className="block text-2xl font-mono font-bold text-emerald-500">
-              {isLoading ? "..." : activeBrokers.toLocaleString('en-IN')}
-            </span>
-          </div>
-          <div className="space-y-1">
-            <span className="block text-[10px] uppercase tracking-wider text-white/40 font-semibold">Off-Market Value</span>
-            <span className="block text-2xl font-mono font-bold text-emerald-500">
-              {isLoading ? "..." : formatValue(offMarketValue)}
-            </span>
-          </div>
+      </div>
+      
+      {/* Metrics Overlay (Bottom) */}
+      <div className="relative z-10 flex gap-8 group-hover:-translate-y-1 transition-transform duration-500 delay-75 mt-auto pb-4">
+        <div className="space-y-1 bg-black/40 backdrop-blur-md p-3 rounded-lg border border-white/5">
+          <span className="block text-[9px] uppercase tracking-[0.1em] text-white/40 font-bold">Active Relays</span>
+          <span className="block text-xl font-mono font-bold text-[#D4AF37]">
+            {isLoading ? "..." : activeBrokers.toLocaleString('en-IN')}
+          </span>
+        </div>
+        <div className="space-y-1 bg-black/40 backdrop-blur-md p-3 rounded-lg border border-white/5">
+          <span className="block text-[9px] uppercase tracking-[0.1em] text-white/40 font-bold">Grid Value</span>
+          <span className="block text-xl font-mono font-bold text-[#D4AF37]">
+            {isLoading ? "..." : formatValue(offMarketValue)}
+          </span>
         </div>
       </div>
 
       {/* Interactive Globe Canvas Container */}
       <div 
-        className="absolute right-0 top-1/2 -translate-y-1/2 w-[400px] h-[400px] pointer-events-auto opacity-80 mix-blend-screen"
+        className="absolute right-[-10%] top-1/2 -translate-y-1/2 w-[500px] h-[500px] pointer-events-auto opacity-90 mix-blend-screen"
         onPointerDown={(e) => {
           e.stopPropagation();
           pointerInteracting.current = e.clientX;
@@ -178,6 +184,6 @@ export function MarketPulse() {
           }}
         />
       </div>
-    </GlassCard>
+    </div>
   );
 }

@@ -125,9 +125,11 @@ export function AiMatchesGrid() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-light text-white tracking-tight">AI <span className="font-semibold">Matches</span></h2>
-          <span className="text-xs text-emerald-500 font-mono bg-emerald-500/10 px-2 py-1 rounded animate-pulse">Computing...</span>
+        <div className="flex items-center justify-between border-b border-white/5 pb-4">
+          <h2 className="text-xl font-black text-white tracking-tighter uppercase flex items-center gap-2">
+            <span className="text-[#D4AF37]">⚡</span> AI Match Engine
+          </h2>
+          <span className="text-[10px] text-[#D4AF37] font-mono tracking-widest uppercase bg-[#D4AF37]/10 px-2 py-1 rounded border border-[#D4AF37]/20 animate-pulse">Computing...</span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <Skeleton className="h-[280px] w-full rounded-[2rem]" />
@@ -139,26 +141,39 @@ export function AiMatchesGrid() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-light text-white tracking-tight">AI <span className="font-semibold">Matches</span></h2>
+      <div className="flex items-center justify-between border-b border-white/5 pb-4">
+        <h2 className="text-xl font-black text-white tracking-tighter uppercase flex items-center gap-2">
+          <span className="text-[#D4AF37]">⚡</span> AI Match Engine
+        </h2>
         {hasRequirements && matches.length > 0 && (
-          <span className="text-xs text-emerald-500 font-mono bg-emerald-500/10 px-2 py-1 rounded">Real-Time</span>
+          <span className="text-[10px] text-white/50 font-mono tracking-widest uppercase">Real-Time</span>
         )}
       </div>
 
       {!hasRequirements ? (
-        <div className="h-48 flex flex-col items-center justify-center border border-emerald-500/10 bg-emerald-500/5 rounded-2xl gap-4">
-          <span className="text-emerald-400/80 text-sm font-medium">Post a Requirement to unlock AI Matching</span>
+        <div className="h-64 flex flex-col items-center justify-center border border-dashed border-white/10 bg-[#121A2F]/50 rounded-[2rem] gap-4">
+          <span className="text-[#D4AF37]/80 text-sm font-bold tracking-widest uppercase">Unlock AI Matching</span>
           <button 
             onClick={() => router.push('/post-requirement')}
-            className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold rounded-lg transition-colors"
+            className="px-6 py-3 bg-[#0B1120] border border-[#D4AF37]/30 hover:border-[#D4AF37] text-white text-xs tracking-widest uppercase font-bold rounded-lg transition-all"
           >
             Post Requirement
           </button>
         </div>
       ) : matches.length === 0 ? (
-        <div className="h-48 flex items-center justify-center border border-white/5 bg-white/5 rounded-2xl">
-          <span className="text-white/50 text-sm">No exact matches currently. We'll notify you when one hits the market.</span>
+        <div className="h-64 flex flex-col items-center justify-center border border-white/5 bg-[#121A2F]/50 rounded-[2rem] relative overflow-hidden group">
+          {/* Glowing Star Effect */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-[#D4AF37]/10 blur-3xl rounded-full group-hover:bg-[#D4AF37]/20 transition-all duration-700"></div>
+          
+          <div className="relative z-10 flex flex-col items-center gap-4 text-center px-6">
+            <span className="text-4xl animate-bounce">✨</span>
+            <div>
+              <h3 className="text-sm font-black text-white tracking-widest uppercase mb-2">No Matches Found</h3>
+              <p className="text-[10px] text-white/50 tracking-widest font-mono uppercase max-w-sm leading-loose">
+                We're scanning the network for properties that fit your requirements.
+              </p>
+            </div>
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
