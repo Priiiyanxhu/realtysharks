@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
-import { Home, Building, Users, MessageSquare, User, Loader2, Bell } from "lucide-react";
+import { Home, Building, Users, MessageSquare, User, Loader2, Bell, Sparkles } from "lucide-react";
 
 export function GlobalLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -60,6 +60,7 @@ export function GlobalLayout({ children }: { children: React.ReactNode }) {
     { name: "Network", href: "/network", icon: Users },
     { name: "Messages", href: "/messages", icon: MessageSquare },
     { name: "Profile", href: "/profile", icon: User },
+    { name: "Upgrade", href: "/upgrade", icon: Sparkles },
   ];
 
   return (
