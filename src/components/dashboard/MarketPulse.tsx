@@ -89,11 +89,14 @@ export function MarketPulse() {
       markerColor: [0.06, 0.72, 0.50], // Emerald Green #10B981 equivalent
       glowColor: [0.1, 0.1, 0.15],
       markers: [
-        // Dummy active locations (New York, London, Tokyo, etc.)
-        { location: [40.7128, -74.0060], size: 0.05 },
-        { location: [51.5074, -0.1278], size: 0.04 },
-        { location: [35.6762, 139.6503], size: 0.06 },
-        { location: [25.2048, 55.2708], size: 0.05 }, // Dubai
+        { location: [28.6139, 77.2090], size: 0.08 }, // Delhi
+        { location: [19.0760, 72.8777], size: 0.1 },  // Mumbai
+        { location: [12.9716, 77.5946], size: 0.08 }, // Bangalore
+        { location: [17.3850, 78.4867], size: 0.06 }, // Hyderabad
+        { location: [18.5204, 73.8567], size: 0.05 }, // Pune
+        { location: [25.2048, 55.2708], size: 0.06 }, // Dubai
+        { location: [1.3521, 103.8198], size: 0.04 }, // Singapore
+        { location: [51.5074, -0.1278], size: 0.04 }, // London (NRI)
       ],
       onRender: (state: Record<string, any>) => {
         // Called on every animation frame.

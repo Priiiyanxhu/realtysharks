@@ -76,6 +76,7 @@ export function PropertyCard({
         hover: { scale: 1.02 },
       }}
       transition={{ duration: 0.3, ease: "easeOut" }}
+      onClick={handleClick}
       className={`relative overflow-hidden rounded-[2rem] w-full group bg-black/30 backdrop-blur-3xl border border-white/20 hover:border-emerald-500/50 flex flex-col shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)] ${id ? 'cursor-pointer' : ''}`}
     >
       {/* Specular Highlight: Light hitting glass at top-left, moves with gyro */}
