@@ -93,6 +93,7 @@ export function PropertyCard({
             alt={title}
             fill
             className="object-cover transition-transform duration-700 group-hover:scale-105"
+            unoptimized
           />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center text-white/20">
