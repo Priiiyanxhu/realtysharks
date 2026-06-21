@@ -40,7 +40,7 @@ export function ChatInput({ onSend }: { onSend?: (msg: string) => void }) {
             placeholder="Type your message..."
             className={cn(
               "w-full bg-black/40 text-white rounded-3xl px-5 py-3.5 border border-white/10 outline-none resize-none min-h-[52px] max-h-[150px]",
-              "focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]",
+              "focus:border-[#D4AF37]/50 focus:ring-1 focus:ring-[#D4AF37]/50 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]",
               "placeholder:text-gray-600"
             )}
             rows={1}
@@ -59,7 +59,7 @@ export function ChatInput({ onSend }: { onSend?: (msg: string) => void }) {
           className={cn(
             "w-12 h-12 rounded-full flex items-center justify-center transition-all flex-shrink-0 mb-0.5",
             message.trim() 
-              ? "bg-gradient-to-r from-emerald-400 to-emerald-600 text-white shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)] hover:shadow-[0_0_15px_rgba(16,185,129,0.5)]" 
+              ? "bg-gradient-to-r from-[#D4AF37] to-[#FACC15] text-white shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)] hover:shadow-[0_0_15px_rgba(16,185,129,0.5)]" 
               : "bg-white/5 text-gray-600 border border-white/5 cursor-not-allowed"
           )}
         >

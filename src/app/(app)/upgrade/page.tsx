@@ -33,8 +33,8 @@ export default function UpgradePage() {
   return (
     <div className="min-h-screen pb-24 relative overflow-hidden">
       {/* Background Orbs */}
-      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-emerald-500/10 blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-emerald-500/10 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#D4AF37]/10 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#D4AF37]/10 blur-[120px] rounded-full pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-6 md:px-10 pt-[calc(env(safe-area-inset-top)+2rem)] relative z-10">
         
@@ -47,9 +47,9 @@ export default function UpgradePage() {
         </button>
 
         <div className="text-center max-w-2xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 px-4 py-1.5 rounded-full mb-6">
-            <Sparkles className="w-4 h-4 text-emerald-400" />
-            <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest">RealtySharks Premium</span>
+          <div className="inline-flex items-center gap-2 bg-[#D4AF37]/10 border border-[#D4AF37]/20 px-4 py-1.5 rounded-full mb-6">
+            <Sparkles className="w-4 h-4 text-[#D4AF37]" />
+            <span className="text-xs font-bold text-[#D4AF37] uppercase tracking-widest">RealtySharks Premium</span>
           </div>
           <h1 className="text-4xl md:text-5xl font-light text-white tracking-tight mb-4">
             Dominate the <span className="font-bold">Market</span>
@@ -75,7 +75,7 @@ export default function UpgradePage() {
             <div className="flex-1 space-y-4 mb-8">
               {benefits.map((b, i) => (
                 <div key={i} className="flex items-start gap-3">
-                  <Check className="w-5 h-5 text-emerald-400 shrink-0" />
+                  <Check className="w-5 h-5 text-[#D4AF37] shrink-0" />
                   <span className="text-sm text-white/80">{b}</span>
                 </div>
               ))}
@@ -90,12 +90,12 @@ export default function UpgradePage() {
           </GlassCard>
 
           {/* Half Yearly (Most Popular) */}
-          <GlassCard className="p-8 flex flex-col relative border-emerald-500/30 transform md:-translate-y-4 shadow-[0_0_40px_rgba(16,185,129,0.15)]">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-emerald-500 text-[#050505] px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest flex items-center gap-1">
+          <GlassCard className="p-8 flex flex-col relative border-[#D4AF37]/30 transform md:-translate-y-4 shadow-[0_0_40px_rgba(212,175,55,0.15)]">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#D4AF37] text-[#0B1120] px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest flex items-center gap-1">
               <Diamond className="w-3 h-3" /> Most Popular
             </div>
             <div className="mb-8">
-              <h3 className="text-xl font-semibold text-emerald-400 mb-2">Half Yearly</h3>
+              <h3 className="text-xl font-semibold text-[#D4AF37] mb-2">Half Yearly</h3>
               <p className="text-sm text-white/50">Save ₹495 over 6 months.</p>
             </div>
             <div className="mb-8">
@@ -105,7 +105,7 @@ export default function UpgradePage() {
             <div className="flex-1 space-y-4 mb-8">
               {benefits.map((b, i) => (
                 <div key={i} className="flex items-start gap-3">
-                  <Check className="w-5 h-5 text-emerald-400 shrink-0" />
+                  <Check className="w-5 h-5 text-[#D4AF37] shrink-0" />
                   <span className="text-sm text-white/80">{b}</span>
                 </div>
               ))}
@@ -113,7 +113,7 @@ export default function UpgradePage() {
             <button 
               onClick={() => handleUpgrade('Half Yearly')}
               disabled={loadingTier !== null}
-              className="w-full py-4 rounded-xl font-bold bg-emerald-500 hover:bg-emerald-600 text-white transition-colors shadow-[0_0_20px_rgba(16,185,129,0.3)]"
+              className="w-full py-4 rounded-xl font-bold bg-[#D4AF37] hover:bg-[#FACC15] text-[#0B1120] transition-colors shadow-[0_0_20px_rgba(212,175,55,0.3)]"
             >
               {loadingTier === 'Half Yearly' ? "Processing..." : "Select Half Yearly"}
             </button>
@@ -132,7 +132,7 @@ export default function UpgradePage() {
             <div className="flex-1 space-y-4 mb-8">
               {benefits.map((b, i) => (
                 <div key={i} className="flex items-start gap-3">
-                  <Check className="w-5 h-5 text-emerald-400 shrink-0" />
+                  <Check className="w-5 h-5 text-[#D4AF37] shrink-0" />
                   <span className="text-sm text-white/80">{b}</span>
                 </div>
               ))}
@@ -150,7 +150,7 @@ export default function UpgradePage() {
 
         {/* Founder Note */}
         <div className="mt-16 text-center max-w-xl mx-auto">
-          <ShieldCheck className="w-8 h-8 text-emerald-500/50 mx-auto mb-4" />
+          <ShieldCheck className="w-8 h-8 text-[#D4AF37]/50 mx-auto mb-4" />
           <p className="text-xs text-white/40 leading-relaxed">
             RealtySharks is a closed, invite-only network. All subscriptions are subject to KYC verification. If your KYC is rejected, your subscription fee will be fully refunded within 5-7 business days. 
           </p>

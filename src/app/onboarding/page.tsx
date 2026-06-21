@@ -104,7 +104,7 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0F1419] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#0B1120] flex items-center justify-center p-4">
       <GlassCard className="w-full max-w-2xl p-8 relative overflow-visible">
         
         {/* Progress Bar */}
@@ -113,14 +113,14 @@ export default function OnboardingPage() {
             <div key={i} className="flex items-center">
               <div className={cn(
                 "w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors",
-                step >= i ? "bg-emerald-500 text-white" : "bg-white/10 text-white/40 border border-white/10"
+                step >= i ? "bg-[#D4AF37] text-[#0B1120]" : "bg-white/10 text-white/40 border border-white/10"
               )}>
                 {step > i ? <Check className="w-4 h-4" /> : i}
               </div>
               {i < 3 && (
                 <div className={cn(
                   "w-20 md:w-32 h-1 mx-2 rounded-full transition-colors",
-                  step > i ? "bg-emerald-500" : "bg-white/10"
+                  step > i ? "bg-[#D4AF37]" : "bg-white/10"
                 )} />
               )}
             </div>
@@ -150,7 +150,7 @@ export default function OnboardingPage() {
                     className={cn(
                       "p-4 rounded-2xl border cursor-pointer transition-all flex flex-col items-center justify-center gap-2 text-center",
                       role === r 
-                        ? "bg-emerald-500/20 border-emerald-500 text-emerald-400 shadow-[inset_0_1px_1px_rgba(16,185,129,0.4)]" 
+                        ? "bg-[#D4AF37]/20 border-[#D4AF37] text-[#D4AF37] shadow-[inset_0_1px_1px_rgba(212,175,55,0.4)]" 
                         : "bg-white/5 border-white/10 text-gray-400 hover:bg-white/10 hover:text-white"
                     )}
                   >
@@ -185,7 +185,7 @@ export default function OnboardingPage() {
                 </div>
                 <div>
                   <label className="text-xs uppercase tracking-wider text-gray-500 font-semibold ml-1 mb-2 block">Profile Avatar</label>
-                  <input type="file" accept="image/*" onChange={(e) => setAvatarFile(e.target.files?.[0] || null)} className="text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-emerald-500/20 file:text-emerald-400 hover:file:bg-emerald-500/30 transition-all" />
+                  <input type="file" accept="image/*" onChange={(e) => setAvatarFile(e.target.files?.[0] || null)} className="text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#D4AF37]/20 file:text-[#D4AF37] hover:file:bg-[#D4AF37]/30 transition-all" />
                 </div>
               </div>
             </div>
@@ -205,11 +205,11 @@ export default function OnboardingPage() {
                   onChange={(e) => setKycFile(e.target.files?.[0] || null)}
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 />
-                <ShieldCheck className="w-12 h-12 text-emerald-500 mb-4" />
+                <ShieldCheck className="w-12 h-12 text-[#D4AF37] mb-4" />
                 <h3 className="text-lg font-semibold text-white mb-1">Upload KYC Document</h3>
                 <p className="text-sm text-gray-400">PDF, JPG, PNG up to 10MB</p>
                 {kycFile && (
-                  <div className="mt-4 px-4 py-2 bg-emerald-500/20 text-emerald-400 rounded-full text-sm font-medium border border-emerald-500/30 flex items-center gap-2">
+                  <div className="mt-4 px-4 py-2 bg-[#D4AF37]/20 text-[#D4AF37] rounded-full text-sm font-medium border border-[#D4AF37]/30 flex items-center gap-2">
                     <Check className="w-4 h-4" /> {kycFile.name}
                   </div>
                 )}

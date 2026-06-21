@@ -34,7 +34,7 @@ export function MessageBubble({ content, timestamp, isSent, status = 'sent' }: M
         className={cn(
           "max-w-[85%] md:max-w-[70%] px-4 py-3 rounded-3xl relative shadow-sm flex flex-col gap-2",
           isSent 
-            ? "bg-emerald-600 text-white rounded-br-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]" 
+            ? "bg-[#FACC15] text-white rounded-br-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]" 
             : "bg-white/10 backdrop-blur-3xl text-white rounded-bl-md border border-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]"
         )}
       >
@@ -44,12 +44,12 @@ export function MessageBubble({ content, timestamp, isSent, status = 'sent' }: M
           <div className={cn(
             "p-3 rounded-xl mb-1 border shadow-sm cursor-pointer hover:opacity-90 transition-opacity",
             isSent 
-              ? "bg-emerald-700/50 border-emerald-500/30" 
+              ? "bg-[#FACC15]/50 border-[#D4AF37]/30" 
               : "bg-black/30 border-white/10"
           )}>
             <div className="flex items-center gap-2 mb-1.5">
-              <Building className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="text-xs font-bold uppercase tracking-widest text-emerald-400">Inquiry Context</span>
+              <Building className="w-3.5 h-3.5 text-[#D4AF37]" />
+              <span className="text-xs font-bold uppercase tracking-widest text-[#D4AF37]">Inquiry Context</span>
             </div>
             <h4 className="font-semibold text-sm leading-tight mb-1">{taggedListing.title}</h4>
             <div className="flex items-center justify-between mt-2">
@@ -68,7 +68,7 @@ export function MessageBubble({ content, timestamp, isSent, status = 'sent' }: M
         
         <div className={cn(
           "flex items-center gap-1 mt-1 justify-end",
-          isSent ? "text-emerald-100/80" : "text-gray-400/80"
+          isSent ? "text-[#FACC15]/80" : "text-gray-400/80"
         )}>
           <span className="text-[10px] font-medium">{timestamp}</span>
           {isSent && (

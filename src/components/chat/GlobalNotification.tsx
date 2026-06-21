@@ -107,7 +107,7 @@ export function NotificationEngine() {
         <div className="flex-1 min-w-0 pt-0.5">
           <div className="flex items-center gap-2 mb-1">
             <h4 className="font-semibold text-white text-sm truncate">{notification.title}</h4>
-            <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded uppercase tracking-wider">New</span>
+            <span className="text-[10px] text-[#D4AF37] font-bold bg-[#D4AF37]/10 px-1.5 py-0.5 rounded uppercase tracking-wider">New</span>
           </div>
           <p className="text-gray-400 text-sm truncate">{notification.body}</p>
         </div>

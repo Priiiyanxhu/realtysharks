@@ -83,7 +83,7 @@ export default function PublicBrokerProfile() {
       <div className="min-h-full flex items-center justify-center p-6">
         <div className="text-center space-y-4">
           <h2 className="text-2xl text-white font-light">Broker Not Found</h2>
-          <button onClick={() => router.push('/network')} className="text-emerald-500 hover:text-emerald-400">Return to Network</button>
+          <button onClick={() => router.push('/network')} className="text-[#D4AF37] hover:text-[#FACC15] font-bold tracking-wide uppercase text-sm">Return to Network</button>
         </div>
       </div>
     );
@@ -95,7 +95,7 @@ export default function PublicBrokerProfile() {
         
         {/* Profile Header */}
         <GlassCard className="p-8 md:p-10 relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-emerald-500/10 to-transparent" />
+          <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-[#D4AF37]/10 to-transparent" />
           
           <div className="relative z-10 flex flex-col md:flex-row items-center md:items-start gap-8">
             <div className="relative w-32 h-32 rounded-full bg-slate-800 border-4 border-[#0a0f16] shadow-xl overflow-hidden shrink-0">
@@ -108,7 +108,7 @@ export default function PublicBrokerProfile() {
                 </div>
               )}
               {profile.rera_number && (
-                <div className="absolute bottom-1 right-1 bg-emerald-500 rounded-full p-1.5 border-2 border-[#0a0f16]" title="RERA Verified">
+                <div className="absolute bottom-1 right-1 bg-[#D4AF37] rounded-full p-1.5 border-2 border-[#0a0f16]" title="RERA Verified">
                   <ShieldCheck className="w-4 h-4 text-[#0a0f16]" />
                 </div>
               )}
@@ -116,11 +116,11 @@ export default function PublicBrokerProfile() {
 
             <div className="flex-1 text-center md:text-left space-y-4">
               <div>
-                <h1 className="text-3xl font-bold text-white tracking-tight flex items-center justify-center md:justify-start gap-2">
+                <h1 className="text-3xl font-black text-white tracking-tighter flex items-center justify-center md:justify-start gap-2">
                   {profile.full_name}
-                  {profile.rera_number && <ShieldCheck className="w-5 h-5 text-emerald-500" />}
+                  {profile.rera_number && <ShieldCheck className="w-5 h-5 text-[#D4AF37]" />}
                 </h1>
-                <p className="text-emerald-500 font-medium mt-1 flex items-center justify-center md:justify-start gap-1.5 text-lg">
+                <p className="text-[#D4AF37] font-bold mt-1 flex items-center justify-center md:justify-start gap-1.5 text-xs uppercase tracking-widest">
                   <Briefcase className="w-4 h-4" /> {profile.agency_name}
                 </p>
               </div>
@@ -145,9 +145,9 @@ export default function PublicBrokerProfile() {
             <div className="shrink-0">
               <button 
                 onClick={handleMessage}
-                className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-xl font-medium transition-all shadow-lg shadow-emerald-500/20"
+                className="flex items-center gap-2 bg-[#D4AF37] hover:bg-[#FACC15] text-[#0B1120] px-6 py-3 rounded-xl font-bold uppercase tracking-widest text-xs transition-all shadow-lg shadow-[#D4AF37]/20"
               >
-                <MessageSquare className="w-5 h-5" />
+                <MessageSquare className="w-4 h-4" />
                 Message Broker
               </button>
             </div>
@@ -162,14 +162,14 @@ export default function PublicBrokerProfile() {
               className={`text-lg font-medium transition-colors relative ${activeTab === 'listings' ? 'text-white' : 'text-white/40 hover:text-white/70'}`}
             >
               Active Listings ({listings.length})
-              {activeTab === 'listings' && <div className="absolute -bottom-[17px] left-0 right-0 h-0.5 bg-emerald-500 rounded-t-full" />}
+              {activeTab === 'listings' && <div className="absolute -bottom-[17px] left-0 right-0 h-0.5 bg-[#D4AF37] rounded-t-full" />}
             </button>
             <button 
               onClick={() => setActiveTab('requirements')}
               className={`text-lg font-medium transition-colors relative ${activeTab === 'requirements' ? 'text-white' : 'text-white/40 hover:text-white/70'}`}
             >
               Requirements ({requirements.length})
-              {activeTab === 'requirements' && <div className="absolute -bottom-[17px] left-0 right-0 h-0.5 bg-emerald-500 rounded-t-full" />}
+              {activeTab === 'requirements' && <div className="absolute -bottom-[17px] left-0 right-0 h-0.5 bg-[#D4AF37] rounded-t-full" />}
             </button>
           </div>
 
@@ -211,16 +211,16 @@ export default function PublicBrokerProfile() {
                     <div className="flex justify-between items-start">
                       <div>
                         <div className="flex items-center gap-2 mb-2">
-                          <span className="text-xs text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded uppercase">{req.property_type}</span>
+                          <span className="text-xs text-[#D4AF37] font-bold bg-[#D4AF37]/10 px-2 py-0.5 rounded uppercase tracking-widest">{req.property_type}</span>
                           <span className="text-xs text-white/50">{req.city}</span>
                         </div>
                         <h3 className="text-xl font-semibold text-white">Looking for {req.configuration}</h3>
-                        <p className="text-emerald-500 font-medium mt-1">
+                        <p className="text-[#D4AF37] font-medium mt-1">
                           Budget: ₹{((req.budget_min_inr || 0)/10000000).toFixed(1)}Cr - ₹{((req.budget_max_inr || 0)/10000000).toFixed(1)}Cr
                         </p>
                         <p className="text-sm text-white/60 mt-3 line-clamp-2 max-w-3xl">{req.details}</p>
                       </div>
-                      <span className="text-xs text-emerald-500 bg-emerald-500/10 px-3 py-1 rounded-full font-medium tracking-wide">
+                      <span className="text-xs text-[#D4AF37] bg-[#D4AF37]/10 px-3 py-1 rounded-full font-bold uppercase tracking-widest">
                         Active
                       </span>
                     </div>

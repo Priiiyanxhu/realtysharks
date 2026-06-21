@@ -54,13 +54,14 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0F1419] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#0B1120] flex items-center justify-center p-4">
       <GlassCard className="w-full max-w-md p-8 relative overflow-visible">
-        <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-20 h-20 bg-emerald-500/20 blur-2xl rounded-full" />
+        <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-32 h-32 bg-[#D4AF37]/10 blur-3xl rounded-full" />
         
         <div className="text-center mb-8 relative z-10">
-          <h1 className="text-3xl font-bold text-white tracking-tight mb-2">Realty<span className="text-emerald-500">Sharks</span></h1>
-          <p className="text-gray-400 text-sm">Sign in to your Command Center</p>
+          <span className="text-[10px] font-bold tracking-[0.2em] text-[#D4AF37] uppercase mb-4 block">B2B Real Estate OS</span>
+          <h1 className="text-3xl font-black text-white tracking-tighter mb-2">REALTY<span className="text-[#D4AF37]">SHARKS</span></h1>
+          <p className="text-gray-400 text-sm tracking-wide">Sign in to your Command Center</p>
         </div>
 
         {error && (
@@ -84,7 +85,7 @@ export default function LoginPage() {
           <div className="space-y-2">
             <div className="flex items-center justify-between ml-1">
               <label className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Password</label>
-              <Link href="/forgot-password" className="text-xs text-emerald-500 hover:text-emerald-400 font-medium transition-colors">
+              <Link href="/forgot-password" className="text-xs text-[#D4AF37] hover:text-[#FACC15] font-bold tracking-wide transition-colors">
                 Forgot Password?
               </Link>
             </div>
@@ -102,9 +103,9 @@ export default function LoginPage() {
           </PremiumButton>
         </form>
 
-        <div className="mt-8 text-center text-sm text-gray-400 relative z-10">
+        <div className="mt-8 text-center text-sm text-gray-400 relative z-10 font-medium tracking-wide">
           Not part of the network?{" "}
-          <Link href="/register" className="text-emerald-400 hover:text-emerald-300 font-medium transition-colors">
+          <Link href="/register" className="text-[#D4AF37] hover:text-[#FACC15] font-bold transition-colors">
             Apply for Access
           </Link>
         </div>

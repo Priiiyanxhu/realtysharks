@@ -33,7 +33,7 @@ export function FilterBar() {
           <button 
             onClick={() => setIsExpanded(!isExpanded)}
             className={`p-2.5 rounded-lg border transition-all ${
-              isExpanded ? "bg-emerald-500/20 border-emerald-500/30 text-emerald-400" : "bg-white/5 border-white/10 text-white/60 hover:text-white"
+              isExpanded ? "bg-[#D4AF37]/20 border-[#D4AF37]/30 text-[#D4AF37]" : "bg-white/5 border-white/10 text-white/60 hover:text-white"
             }`}
           >
             <SlidersHorizontal className="w-4 h-4" />
@@ -48,7 +48,7 @@ export function FilterBar() {
             <div className="relative">
               <label className="block text-[10px] uppercase tracking-wider text-white/50 mb-1.5 font-semibold">Property Type</label>
               <div className="relative">
-                <select className="w-full appearance-none bg-white/5 border border-white/10 text-white text-sm rounded-lg px-4 py-2.5 outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50 transition-all">
+                <select className="w-full appearance-none bg-white/5 border border-white/10 text-white text-sm rounded-lg px-4 py-2.5 outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]/50 transition-all">
                   <option value="all" className="bg-[#0f1419]">All Types</option>
                   <option value="commercial" className="bg-[#0f1419]">Commercial</option>
                   <option value="residential" className="bg-[#0f1419]">Residential</option>
@@ -62,7 +62,7 @@ export function FilterBar() {
             <div className="relative">
               <label className="block text-[10px] uppercase tracking-wider text-white/50 mb-1.5 font-semibold">Status</label>
               <div className="relative">
-                <select className="w-full appearance-none bg-white/5 border border-white/10 text-white text-sm rounded-lg px-4 py-2.5 outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50 transition-all">
+                <select className="w-full appearance-none bg-white/5 border border-white/10 text-white text-sm rounded-lg px-4 py-2.5 outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]/50 transition-all">
                   <option value="all" className="bg-[#0f1419]">Any Status</option>
                   <option value="off-market" className="bg-[#0f1419]">Off-Market</option>
                   <option value="active" className="bg-[#0f1419]">Active Listings</option>

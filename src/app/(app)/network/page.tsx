@@ -62,14 +62,14 @@ export default function NetworkPage() {
                 placeholder="Search name or agency..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-[#1A202C] text-white rounded-full pl-11 pr-4 py-3 border border-gray-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50 transition-all outline-none"
+                className="w-full bg-[#1A202C] text-white rounded-full pl-11 pr-4 py-3 border border-gray-700 focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]/50 transition-all outline-none"
               />
             </div>
             
             <select 
               value={cityFilter}
               onChange={(e) => setCityFilter(e.target.value)}
-              className="bg-[#1A202C] text-white rounded-full px-6 py-3 border border-gray-700 focus:border-emerald-500 outline-none appearance-none cursor-pointer"
+              className="bg-[#1A202C] text-white rounded-full px-6 py-3 border border-gray-700 focus:border-[#D4AF37] outline-none appearance-none cursor-pointer"
             >
               <option value="">All Cities</option>
               {cities.map(city => (
@@ -92,7 +92,7 @@ export default function NetworkPage() {
               <GlassCard 
                 key={profile.id} 
                 onClick={() => router.push(`/network/${profile.id}`)}
-                className="p-6 flex flex-col items-center text-center hover:border-emerald-500/30 transition-colors group cursor-pointer"
+                className="p-6 flex flex-col items-center text-center hover:border-[#D4AF37]/30 transition-colors group cursor-pointer"
               >
                 <div className="relative w-20 h-20 rounded-full bg-slate-800 border-2 border-white/10 overflow-hidden mb-4 group-hover:scale-105 transition-transform">
                   {profile.avatar_url ? (
@@ -104,14 +104,14 @@ export default function NetworkPage() {
                     </div>
                   )}
                   {profile.rera_number && (
-                    <div className="absolute -bottom-1 -right-1 bg-emerald-500 rounded-full p-1 border-2 border-[#0a0f16]" title="RERA Verified">
+                    <div className="absolute -bottom-1 -right-1 bg-[#D4AF37] rounded-full p-1 border-2 border-[#0a0f16]" title="RERA Verified">
                       <ShieldCheck className="w-3 h-3 text-[#0a0f16]" />
                     </div>
                   )}
                 </div>
                 
                 <h3 className="text-lg font-semibold text-white">{profile.full_name}</h3>
-                <p className="text-emerald-500 text-sm font-medium mt-1 flex items-center gap-1.5">
+                <p className="text-[#D4AF37] text-sm font-medium mt-1 flex items-center gap-1.5">
                   <Briefcase className="w-3 h-3" /> {profile.agency_name}
                 </p>
                 

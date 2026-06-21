@@ -37,7 +37,7 @@ export function QuickActionsPanel({ profile }: { profile: any }) {
           
           <div className="flex flex-col min-w-0">
             <h3 className="text-white font-semibold truncate">{profile?.full_name || "Broker"}</h3>
-            <p className="text-xs text-emerald-500 font-medium truncate">{profile?.agency_name || "Independent"}</p>
+            <p className="text-xs text-[#D4AF37] font-medium truncate">{profile?.agency_name || "Independent"}</p>
           </div>
         </div>
 
@@ -48,7 +48,7 @@ export function QuickActionsPanel({ profile }: { profile: any }) {
         </div>
         <div className="flex justify-between items-center text-sm">
           <span className="text-white/50">Active Requirements</span>
-          <span className="font-mono font-bold text-emerald-500">{profile?.activeReqsCount ?? 0}</span>
+          <span className="font-mono font-bold text-[#D4AF37]">{profile?.activeReqsCount ?? 0}</span>
         </div>
 
         {/* Actions */}
@@ -60,7 +60,7 @@ export function QuickActionsPanel({ profile }: { profile: any }) {
             <button onClick={() => router.push('/post-requirement')} className="w-1/2 py-2.5 rounded-lg border border-white/10 text-white/80 font-medium text-[13px] hover:bg-white/5 hover:text-white transition-all">
               Need Property
             </button>
-            <button onClick={() => router.push('/profile')} className="w-1/2 py-2.5 rounded-lg border border-emerald-500/20 text-emerald-400 font-medium text-[13px] hover:bg-emerald-500/10 transition-all">
+            <button onClick={() => router.push('/profile')} className="w-1/2 py-2.5 rounded-lg border border-[#D4AF37]/20 text-[#D4AF37] font-medium text-[13px] hover:bg-[#D4AF37]/10 transition-all">
               My Profile
             </button>
           </div>

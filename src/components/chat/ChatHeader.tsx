@@ -45,7 +45,7 @@ export function ChatHeader({
           </div>
           <div>
             <h3 className="font-semibold text-white">{agentName}</h3>
-            <p className="text-sm text-emerald-400 flex items-center gap-1">
+            <p className="text-sm text-[#D4AF37] flex items-center gap-1">
               <Building className="w-3 h-3" /> {agentCompany}
             </p>
           </div>
@@ -87,7 +87,7 @@ export function ChatHeader({
       {propertyTitle && (
         <div className="mt-4 px-3 py-2 bg-white/5 rounded-xl border border-white/10 text-sm flex items-center justify-between cursor-pointer hover:bg-white/10 transition-colors">
           <span className="text-gray-300">Discussing: <strong className="text-white">{propertyTitle}</strong></span>
-          <span className="text-emerald-500 font-medium text-xs uppercase tracking-wider">View Listing &rarr;</span>
+          <span className="text-[#D4AF37] font-medium text-xs uppercase tracking-wider">View Listing &rarr;</span>
         </div>
       )}
     </div>

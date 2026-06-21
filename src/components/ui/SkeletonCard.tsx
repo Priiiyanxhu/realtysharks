@@ -26,7 +26,7 @@ export function SkeletonCard({ className }: { className?: string }) {
         {/* Title & Price */}
         <div className="space-y-3">
           <div className="h-6 w-3/4 bg-white/10 rounded-md" />
-          <div className="h-8 w-1/2 bg-emerald-500/10 rounded-md" />
+          <div className="h-8 w-1/2 bg-[#D4AF37]/10 rounded-md" />
         </div>
 
         {/* Location & Meta */}

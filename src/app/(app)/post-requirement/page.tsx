@@ -180,7 +180,7 @@ export default function PostRequirementPage() {
         
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white tracking-tight">
-            {editId ? "Edit" : "Post"} <span className="text-emerald-500">Requirement</span>
+            {editId ? "Edit" : "Post"} <span className="text-[#D4AF37]">Requirement</span>
           </h1>
           <p className="text-gray-400 mt-2">
             {editId ? "Update your active requirement." : "Broadcast your buyer's needs to elite brokers."}
@@ -203,7 +203,7 @@ export default function PostRequirementPage() {
                 <select 
                   value={propertyType} 
                   onChange={(e) => setPropertyType(e.target.value)}
-                  className="w-full bg-[#1A1A1A] border border-gray-700/50 text-white rounded-full px-4 py-3 outline-none focus:border-emerald-500/50 transition-all appearance-none"
+                  className="w-full bg-[#1A1A1A] border border-gray-700/50 text-white rounded-full px-4 py-3 outline-none focus:border-[#D4AF37]/50 transition-all appearance-none"
                 >
                   {[
                     "Apartment / Flat",
@@ -259,7 +259,7 @@ export default function PostRequirementPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <label className="text-xs uppercase tracking-wider text-gray-500 font-semibold ml-1">Client Profile</label>
-                <select value={clientProfile} onChange={(e) => setClientProfile(e.target.value)} className="w-full bg-[#1A1A1A] border border-gray-700/50 text-white rounded-full px-4 py-3 outline-none focus:border-emerald-500/50 transition-all appearance-none">
+                <select value={clientProfile} onChange={(e) => setClientProfile(e.target.value)} className="w-full bg-[#1A1A1A] border border-gray-700/50 text-white rounded-full px-4 py-3 outline-none focus:border-[#D4AF37]/50 transition-all appearance-none">
                   <option value="HNI Investor">HNI Investor</option>
                   <option value="Corporate Relocation">Corporate Relocation</option>
                   <option value="End-User Family">End-User Family</option>
@@ -269,7 +269,7 @@ export default function PostRequirementPage() {
 
               <div className="space-y-2">
                 <label className="text-xs uppercase tracking-wider text-gray-500 font-semibold ml-1">Funding Status</label>
-                <select value={fundingStatus} onChange={(e) => setFundingStatus(e.target.value)} className="w-full bg-[#1A1A1A] border border-gray-700/50 text-white rounded-full px-4 py-3 outline-none focus:border-emerald-500/50 transition-all appearance-none">
+                <select value={fundingStatus} onChange={(e) => setFundingStatus(e.target.value)} className="w-full bg-[#1A1A1A] border border-gray-700/50 text-white rounded-full px-4 py-3 outline-none focus:border-[#D4AF37]/50 transition-all appearance-none">
                   <option value="Pre-approved Loan">Pre-approved Loan</option>
                   <option value="Cash Buyer / Liquid Funds">Cash Buyer / Liquid Funds</option>
                   <option value="Selling existing property">Selling existing property</option>
@@ -278,7 +278,7 @@ export default function PostRequirementPage() {
 
               <div className="space-y-2">
                 <label className="text-xs uppercase tracking-wider text-gray-500 font-semibold ml-1">Timeline to Close</label>
-                <select value={timeline} onChange={(e) => setTimeline(e.target.value)} className="w-full bg-[#1A1A1A] border border-gray-700/50 text-white rounded-full px-4 py-3 outline-none focus:border-emerald-500/50 transition-all appearance-none">
+                <select value={timeline} onChange={(e) => setTimeline(e.target.value)} className="w-full bg-[#1A1A1A] border border-gray-700/50 text-white rounded-full px-4 py-3 outline-none focus:border-[#D4AF37]/50 transition-all appearance-none">
                   <option value="Immediate (0-15 Days)">Immediate (0-15 Days)</option>
                   <option value="1-3 Months">1-3 Months</option>
                   <option value="3-6 Months">3-6 Months</option>
@@ -292,7 +292,7 @@ export default function PostRequirementPage() {
               <button 
                 type="button" 
                 onClick={() => setShowAdvanced(!showAdvanced)}
-                className="text-emerald-400 text-sm font-medium hover:text-emerald-300 transition-colors flex items-center gap-1"
+                className="text-[#D4AF37] text-sm font-medium hover:text-[#FACC15] transition-colors flex items-center gap-1"
               >
                 {showAdvanced ? "- Hide Advanced Options" : "+ Show Advanced Options (Purpose, Yield, Dealbreakers)"}
               </button>
@@ -302,7 +302,7 @@ export default function PostRequirementPage() {
               <div className="pt-4 border-t border-white/5 grid grid-cols-1 md:grid-cols-2 gap-6 animate-in slide-in-from-top-2 fade-in duration-200">
                 <div className="space-y-2">
                   <label className="text-xs uppercase tracking-wider text-gray-500 font-semibold ml-1">Purpose of Purchase</label>
-                  <select value={purchasePurpose} onChange={(e) => setPurchasePurpose(e.target.value)} className="w-full bg-[#1A1A1A] border border-gray-700/50 text-white rounded-full px-4 py-3 outline-none focus:border-emerald-500/50 transition-all appearance-none">
+                  <select value={purchasePurpose} onChange={(e) => setPurchasePurpose(e.target.value)} className="w-full bg-[#1A1A1A] border border-gray-700/50 text-white rounded-full px-4 py-3 outline-none focus:border-[#D4AF37]/50 transition-all appearance-none">
                     <option value="Investment">Investment (Yield/Appreciation)</option>
                     <option value="End-Use">End-Use (Self Occupancy)</option>
                     <option value="Flipping">Flipping / Renovation</option>
@@ -328,7 +328,7 @@ export default function PostRequirementPage() {
               <div className="flex flex-col sm:flex-row gap-6">
                 <div className="flex-1 space-y-2">
                   <label className="text-xs uppercase tracking-wider text-gray-500 font-semibold ml-1">Privacy Level</label>
-                  <select value={privacyLevel} onChange={(e) => setPrivacyLevel(e.target.value)} className="w-full bg-[#1A1A1A] border border-gray-700/50 text-white rounded-full px-4 py-3 outline-none focus:border-emerald-500/50 transition-all appearance-none">
+                  <select value={privacyLevel} onChange={(e) => setPrivacyLevel(e.target.value)} className="w-full bg-[#1A1A1A] border border-gray-700/50 text-white rounded-full px-4 py-3 outline-none focus:border-[#D4AF37]/50 transition-all appearance-none">
                     <option value="Standard">Standard</option>
                     <option value="Highly Confidential">Highly Confidential (VIP Client)</option>
                   </select>
@@ -341,9 +341,9 @@ export default function PostRequirementPage() {
                         type="checkbox" 
                         checked={directMandateOnly}
                         onChange={(e) => setDirectMandateOnly(e.target.checked)}
-                        className="peer appearance-none w-5 h-5 border border-gray-600 rounded bg-[#1A1A1A] checked:bg-emerald-500 checked:border-emerald-500 transition-all cursor-pointer"
+                        className="peer appearance-none w-5 h-5 border border-gray-600 rounded bg-[#1A1A1A] checked:bg-[#D4AF37] checked:border-[#D4AF37] transition-all cursor-pointer"
                       />
-                      <svg className="absolute w-3 h-3 text-[#050505] opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <svg className="absolute w-3 h-3 text-[#0B1120] opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
@@ -363,7 +363,7 @@ export default function PostRequirementPage() {
                   type="button" 
                   onClick={generateAiDescription}
                   disabled={isAiLoading}
-                  className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors border border-emerald-500/30 rounded-full text-sm font-medium"
+                  className="flex items-center gap-2 px-4 py-2 bg-[#D4AF37]/10 text-[#D4AF37] hover:bg-[#D4AF37]/20 transition-colors border border-[#D4AF37]/30 rounded-full text-sm font-medium"
                 >
                   <Sparkles className="w-4 h-4" />
                   {isAiLoading ? "Generating..." : "Generate AI Summary"}
@@ -380,11 +380,11 @@ export default function PostRequirementPage() {
                   }}
                   placeholder="Enter details or use AI Auto-write..."
                   rows={6}
-                  className="w-full bg-[#1A1A1A] border border-gray-700/50 text-white placeholder:text-gray-500 rounded-3xl px-5 py-4 outline-none focus:border-emerald-500/50 transition-all resize-none"
+                  className="w-full bg-[#1A1A1A] border border-gray-700/50 text-white placeholder:text-gray-500 rounded-3xl px-5 py-4 outline-none focus:border-[#D4AF37]/50 transition-all resize-none"
                   required
                 />
                 {isAiGenerated && (
-                  <p className="text-[10px] text-emerald-500/80 px-2 mt-1">
+                  <p className="text-[10px] text-[#D4AF37]/80 px-2 mt-1">
                     * This is an AI-written description. AI can make mistakes, kindly review the description carefully.
                   </p>
                 )}

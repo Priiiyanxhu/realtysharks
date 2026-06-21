@@ -54,7 +54,7 @@ export default function ComponentIsolationTestbed() {
             </PremiumButton>
           </GlassCard>
 
-          <div className="relative rounded-2xl overflow-hidden bg-gradient-to-tr from-emerald-500/20 to-blue-500/20 p-8 flex items-center justify-center">
+          <div className="relative rounded-2xl overflow-hidden bg-gradient-to-tr from-[#D4AF37]/20 to-[#0B1120]/50 p-8 flex items-center justify-center">
             {/* Background texture to make the blur obvious */}
             <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1613490908578-f754cb8ceb52?auto=format&fit=crop&w=800&q=80')] opacity-30 bg-cover bg-center mix-blend-overlay"></div>
             

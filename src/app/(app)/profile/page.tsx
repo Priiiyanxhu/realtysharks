@@ -292,7 +292,7 @@ export default function ProfilePage() {
                       type="text" 
                       value={formData.full_name}
                       onChange={(e) => setFormData({...formData, full_name: e.target.value})}
-                      className="w-full bg-black/20 border border-white/10 rounded-lg py-2.5 pl-10 pr-4 text-sm text-white focus:border-emerald-500/50 focus:outline-none transition-colors"
+                      className="w-full bg-black/20 border border-white/10 rounded-lg py-2.5 pl-10 pr-4 text-sm text-white focus:border-[#D4AF37]/50 focus:outline-none transition-colors"
                     />
                   </div>
                 </div>
@@ -305,7 +305,7 @@ export default function ProfilePage() {
                       type="text" 
                       value={formData.agency_name}
                       onChange={(e) => setFormData({...formData, agency_name: e.target.value})}
-                      className="w-full bg-black/20 border border-white/10 rounded-lg py-2.5 pl-10 pr-4 text-sm text-white focus:border-emerald-500/50 focus:outline-none transition-colors"
+                      className="w-full bg-black/20 border border-white/10 rounded-lg py-2.5 pl-10 pr-4 text-sm text-white focus:border-[#D4AF37]/50 focus:outline-none transition-colors"
                     />
                   </div>
                 </div>
@@ -318,7 +318,7 @@ export default function ProfilePage() {
                       type="tel" 
                       value={formData.phone_number}
                       onChange={(e) => setFormData({...formData, phone_number: e.target.value})}
-                      className="w-full bg-black/20 border border-white/10 rounded-lg py-2.5 pl-10 pr-4 text-sm text-white focus:border-emerald-500/50 focus:outline-none transition-colors"
+                      className="w-full bg-black/20 border border-white/10 rounded-lg py-2.5 pl-10 pr-4 text-sm text-white focus:border-[#D4AF37]/50 focus:outline-none transition-colors"
                     />
                   </div>
                 </div>
@@ -326,10 +326,10 @@ export default function ProfilePage() {
                 <div>
                   <div className="flex justify-between items-center mb-1.5">
                     <label className="text-xs text-white/50 font-medium uppercase tracking-wider">RERA Number</label>
-                    <span className="text-[10px] text-emerald-500/80 bg-emerald-500/10 px-2 py-0.5 rounded">Optional</span>
+                    <span className="text-[10px] text-[#D4AF37]/80 bg-[#D4AF37]/10 px-2 py-0.5 rounded">Optional</span>
                   </div>
                   <div className="relative">
-                    <BadgeCheck className={`w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 ${formData.rera_number && !reraError ? 'text-emerald-500' : 'text-white/30'}`} />
+                    <BadgeCheck className={`w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 ${formData.rera_number && !reraError ? 'text-[#D4AF37]' : 'text-white/30'}`} />
                     <input 
                       type="text" 
                       value={formData.rera_number}
@@ -338,7 +338,7 @@ export default function ProfilePage() {
                         if (reraError) setReraError("");
                       }}
                       placeholder="e.g. PRM12345678"
-                      className={`w-full bg-black/20 border ${reraError ? 'border-red-500/50' : 'border-white/10'} rounded-lg py-2.5 pl-10 pr-4 text-sm text-white uppercase focus:border-emerald-500/50 focus:outline-none transition-colors`}
+                      className={`w-full bg-black/20 border ${reraError ? 'border-red-500/50' : 'border-white/10'} rounded-lg py-2.5 pl-10 pr-4 text-sm text-white uppercase focus:border-[#D4AF37]/50 focus:outline-none transition-colors`}
                     />
                   </div>
                   {reraError ? (
@@ -357,7 +357,7 @@ export default function ProfilePage() {
                       value={formData.core_expertise}
                       onChange={(e) => setFormData({...formData, core_expertise: e.target.value})}
                       placeholder="e.g. Luxury Assets, Commercial, Institutional"
-                      className="w-full bg-black/20 border border-white/10 rounded-lg py-2.5 pl-10 pr-4 text-sm text-white focus:border-emerald-500/50 focus:outline-none transition-colors"
+                      className="w-full bg-black/20 border border-white/10 rounded-lg py-2.5 pl-10 pr-4 text-sm text-white focus:border-[#D4AF37]/50 focus:outline-none transition-colors"
                     />
                   </div>
                   <p className="text-xs text-white/30 mt-1.5">Comma-separated skills to display on your public profile.</p>
@@ -365,9 +365,9 @@ export default function ProfilePage() {
               </div>
 
               {/* KYC Section */}
-              <div className="p-4 bg-emerald-500/5 border border-emerald-500/20 rounded-xl space-y-4">
+              <div className="p-4 bg-[#D4AF37]/5 border border-[#D4AF37]/20 rounded-xl space-y-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <ShieldAlert className={`w-5 h-5 ${profile?.kyc_status === 'verified' ? 'text-emerald-400' : 'text-amber-400'}`} />
+                  <ShieldAlert className={`w-5 h-5 ${profile?.kyc_status === 'verified' ? 'text-[#D4AF37]' : 'text-amber-400'}`} />
                   <h3 className="text-sm font-semibold text-white">KYC Verification</h3>
                   <span className="ml-auto text-[10px] uppercase tracking-widest bg-black/40 px-2 py-1 rounded text-white/70">
                     {profile?.kyc_status || 'Pending'}
@@ -384,7 +384,7 @@ export default function ProfilePage() {
                           type="text" 
                           value={formData.full_name_aadhar}
                           onChange={(e) => setFormData({...formData, full_name_aadhar: e.target.value})}
-                          className="w-full bg-black/40 border border-white/10 rounded py-2 px-3 text-xs text-white focus:border-emerald-500/50 focus:outline-none"
+                          className="w-full bg-black/40 border border-white/10 rounded py-2 px-3 text-xs text-white focus:border-[#D4AF37]/50 focus:outline-none"
                         />
                       </div>
                       <div>
@@ -394,7 +394,7 @@ export default function ProfilePage() {
                           value={formData.aadhar_no}
                           onChange={(e) => setFormData({...formData, aadhar_no: e.target.value})}
                           placeholder="XXXX-XXXX-XXXX"
-                          className="w-full bg-black/40 border border-white/10 rounded py-2 px-3 text-xs text-white focus:border-emerald-500/50 focus:outline-none"
+                          className="w-full bg-black/40 border border-white/10 rounded py-2 px-3 text-xs text-white focus:border-[#D4AF37]/50 focus:outline-none"
                         />
                       </div>
                     </div>
@@ -415,7 +415,7 @@ export default function ProfilePage() {
               <button 
                 type="submit" 
                 disabled={isSaving}
-                className="w-full flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-medium py-3 rounded-xl transition-colors disabled:opacity-50"
+                className="w-full flex items-center justify-center gap-2 bg-[#D4AF37] hover:bg-[#FACC15] text-[#0B1120] font-bold py-3 rounded-xl transition-colors disabled:opacity-50 uppercase tracking-widest text-xs shadow-lg shadow-[#D4AF37]/20"
               >
                 {isSaving ? "Saving..." : (
                   <>
@@ -456,7 +456,7 @@ export default function ProfilePage() {
               {listings.length === 0 ? (
                 <div className="h-48 border border-white/5 bg-white/5 rounded-2xl flex flex-col items-center justify-center gap-4">
                   <span className="text-white/50 text-sm">You haven't posted any listings yet.</span>
-                  <button onClick={() => router.push('/post-listing')} className="flex items-center gap-2 text-emerald-400 hover:text-emerald-300 text-sm font-medium">
+                  <button onClick={() => router.push('/post-listing')} className="flex items-center gap-2 text-[#D4AF37] hover:text-[#FACC15] text-sm font-bold uppercase tracking-widest">
                     <Plus className="w-4 h-4" /> Create Listing
                   </button>
                 </div>
@@ -489,7 +489,7 @@ export default function ProfilePage() {
               {requirements.length === 0 ? (
                 <div className="h-48 border border-white/5 bg-white/5 rounded-2xl flex flex-col items-center justify-center gap-4">
                   <span className="text-white/50 text-sm">You haven't posted any requirements yet.</span>
-                  <button onClick={() => router.push('/post-requirement')} className="flex items-center gap-2 text-emerald-400 hover:text-emerald-300 text-sm font-medium">
+                  <button onClick={() => router.push('/post-requirement')} className="flex items-center gap-2 text-[#D4AF37] hover:text-[#FACC15] text-sm font-bold uppercase tracking-widest">
                     <Plus className="w-4 h-4" /> Post Requirement
                   </button>
                 </div>
@@ -499,17 +499,17 @@ export default function ProfilePage() {
                     <GlassCard key={req.id} className="p-5 flex justify-between items-start">
                       <div>
                         <div className="flex items-center gap-2 mb-2">
-                          <span className="text-xs text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded uppercase">{req.property_type}</span>
+                          <span className="text-xs text-[#D4AF37] font-bold bg-[#D4AF37]/10 px-2 py-0.5 rounded uppercase tracking-widest">{req.property_type}</span>
                           <span className="text-xs text-white/50">{req.city}</span>
                         </div>
                         <h3 className="text-lg font-semibold text-white">Looking for {req.configuration}</h3>
-                        <p className="text-sm text-emerald-500 font-medium mt-1">
+                        <p className="text-sm text-[#D4AF37] font-medium mt-1">
                           Budget: ₹{((req.budget_min_inr || 0)/10000000).toFixed(1)}Cr - ₹{((req.budget_max_inr || 0)/10000000).toFixed(1)}Cr
                         </p>
                         <p className="text-xs text-white/40 mt-2 line-clamp-2 max-w-xl">{req.details}</p>
                       </div>
                       <div className="flex flex-col gap-2 items-end">
-                         <span className="text-xs text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded mb-2">Active</span>
+                         <span className="text-xs text-[#D4AF37] bg-[#D4AF37]/10 px-2 py-1 rounded mb-2 font-bold uppercase tracking-widest">Active</span>
                          <div className="flex items-center gap-2">
                            <button 
                              onClick={() => router.push(`/post-requirement?edit=${req.id}`)}

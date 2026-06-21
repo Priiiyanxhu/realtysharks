@@ -22,7 +22,7 @@ export default function Home() {
       <main className="flex-grow flex flex-col items-center justify-center px-6 py-8 text-center overflow-y-auto">
         <div className="w-full max-w-sm space-y-8">
           {/* Badge */}
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-brand-accent text-xs font-semibold uppercase tracking-wide">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/20 text-brand-accent text-xs font-semibold uppercase tracking-wide">
             <Building className="w-3.5 h-3.5" />
             Institutional Network
           </div>
@@ -42,7 +42,7 @@ export default function Home() {
           <div className="flex flex-col gap-3 pt-6 w-full">
             <Link 
               href="/register"
-              className="w-full bg-brand-accent active:bg-blue-900 text-white text-lg font-medium h-14 rounded-xl flex items-center justify-center gap-2 shadow-md transition-colors"
+              className="w-full bg-brand-accent active:bg-[#FACC15] text-white text-lg font-medium h-14 rounded-xl flex items-center justify-center gap-2 shadow-md transition-colors"
             >
               Sign Up Now
               <ArrowRight className="w-5 h-5" />

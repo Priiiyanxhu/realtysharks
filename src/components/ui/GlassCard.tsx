@@ -5,7 +5,7 @@ export function GlassCard({ children, className = '', ...props }: React.HTMLAttr
   return (
     <div
       className={cn(
-        "backdrop-blur-3xl bg-black/30 border border-white/20 rounded-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)] transition-all duration-300 hover:-translate-y-1 hover:border-emerald-500/50",
+        "backdrop-blur-3xl bg-black/30 border border-white/20 rounded-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)] transition-all duration-300 hover:-translate-y-1 hover:border-[#D4AF37]/50",
         className
       )}
       {...props}

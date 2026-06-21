@@ -54,13 +54,14 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0F1419] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#0B1120] flex items-center justify-center p-4">
       <GlassCard className="w-full max-w-md p-8 relative overflow-visible">
-        <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-20 h-20 bg-emerald-500/20 blur-2xl rounded-full" />
+        <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-32 h-32 bg-[#D4AF37]/10 blur-3xl rounded-full" />
         
         <div className="text-center mb-8 relative z-10">
-          <h1 className="text-3xl font-bold text-white tracking-tight mb-2">Apply for <span className="text-emerald-500">Access</span></h1>
-          <p className="text-gray-400 text-sm">Join the elite institutional broker network</p>
+          <span className="text-[10px] font-bold tracking-[0.2em] text-[#D4AF37] uppercase mb-4 block">B2B Real Estate OS</span>
+          <h1 className="text-3xl font-black text-white tracking-tighter mb-2">Apply for <span className="text-[#D4AF37]">Access</span></h1>
+          <p className="text-gray-400 text-sm tracking-wide">Join the exclusive broker network.</p>
         </div>
 
         {error && (
@@ -97,9 +98,9 @@ export default function RegisterPage() {
           </PremiumButton>
         </form>
 
-        <div className="mt-8 text-center text-sm text-gray-400 relative z-10">
-          Already verified?{" "}
-          <Link href="/login" className="text-emerald-400 hover:text-emerald-300 font-medium transition-colors">
+        <div className="mt-8 text-center text-sm text-gray-400 relative z-10 font-medium tracking-wide">
+          Already part of the network?{" "}
+          <Link href="/login" className="text-[#D4AF37] hover:text-[#FACC15] font-bold transition-colors">
             Sign In
           </Link>
         </div>

@@ -8,12 +8,12 @@ interface DataInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 export function DataInput({ error, success, formatType, className = '', ...props }: DataInputProps) {
-  let stateClasses = "border-gray-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50";
+  let stateClasses = "border-gray-700 focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]/50";
   
   if (error) {
     stateClasses = "border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500/50";
   } else if (success) {
-    stateClasses = "border-emerald-500 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50";
+    stateClasses = "border-[#D4AF37] focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]/50";
   }
 
   // Calculate formatted value if formatType is set and value exists
@@ -36,7 +36,7 @@ export function DataInput({ error, success, formatType, className = '', ...props
         {...props}
       />
       {formatType && formattedValue && (
-        <div className="absolute right-4 pointer-events-none text-emerald-400 font-mono font-medium text-sm bg-[#1A202C]/80 px-2 rounded backdrop-blur-sm">
+        <div className="absolute right-4 pointer-events-none text-[#D4AF37] font-mono font-medium text-sm bg-[#1A202C]/80 px-2 rounded backdrop-blur-sm">
           {formattedValue}
         </div>
       )}

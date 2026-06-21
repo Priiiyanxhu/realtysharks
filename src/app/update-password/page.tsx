@@ -63,15 +63,15 @@ export default function UpdatePasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0F1419] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#0B1120] flex items-center justify-center p-4">
       <GlassCard className="w-full max-w-md p-8 relative overflow-visible">
-        <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-20 h-20 bg-emerald-500/20 blur-2xl rounded-full" />
+        <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-32 h-32 bg-[#D4AF37]/10 blur-3xl rounded-full" />
         
         <div className="text-center mb-8 relative z-10">
-          <div className="w-12 h-12 bg-white/5 border border-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <LockKeyhole className="w-6 h-6 text-emerald-400" />
+          <div className="w-16 h-16 bg-[#D4AF37]/10 border border-[#D4AF37]/30 rounded-full flex items-center justify-center mx-auto mb-4">
+            <LockKeyhole className="w-6 h-6 text-[#D4AF37]" />
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight mb-2">Set New Password</h1>
+          <h1 className="text-2xl font-black text-white tracking-tighter mb-2">Create new password</h1>
           <p className="text-gray-400 text-sm">Please secure your account with a strong password.</p>
         </div>
 

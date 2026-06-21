@@ -174,7 +174,7 @@ export default function PostListingPage() {
         
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white tracking-tight">
-            {editId ? "Edit" : "Post New"} <span className="text-emerald-500">Listing</span>
+            {editId ? "Edit" : "Post New"} <span className="text-[#D4AF37]">Listing</span>
           </h1>
           <p className="text-gray-400 mt-2">
             {editId ? "Update your property details on the network." : "Publish your inventory to the global B2B network."}
@@ -207,7 +207,7 @@ export default function PostListingPage() {
                   }}
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-0"
                 />
-                <ImageIcon className="w-8 h-8 text-emerald-500 mb-3 relative z-10 pointer-events-none" />
+                <ImageIcon className="w-8 h-8 text-[#D4AF37] mb-3 relative z-10 pointer-events-none" />
                 <h3 className="text-sm font-semibold text-white mb-1 relative z-10 pointer-events-none">Upload High-Res Photos (Max 8)</h3>
                 
                 {(imageFiles.length > 0 || existingImages.length > 0) && (
@@ -225,7 +225,7 @@ export default function PostListingPage() {
                       </div>
                     ))}
                     {imageFiles.map((file, idx) => (
-                      <div key={`new-${idx}`} className="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-xs font-medium border border-emerald-500/30 flex items-center gap-1.5 pointer-events-auto">
+                      <div key={`new-${idx}`} className="px-3 py-1 bg-[#D4AF37]/20 text-[#D4AF37] rounded-full text-xs font-medium border border-[#D4AF37]/30 flex items-center gap-1.5 pointer-events-auto">
                         <Check className="w-3 h-3" /> {file.name.slice(0, 12)}...
                         <button 
                           type="button" 
@@ -256,7 +256,7 @@ export default function PostListingPage() {
                 <select 
                   value={propertyType} 
                   onChange={(e) => setPropertyType(e.target.value)}
-                  className="w-full bg-[#1A1A1A] border border-gray-700/50 text-white rounded-full px-4 py-3 outline-none focus:border-emerald-500/50 transition-all appearance-none"
+                  className="w-full bg-[#1A1A1A] border border-gray-700/50 text-white rounded-full px-4 py-3 outline-none focus:border-[#D4AF37]/50 transition-all appearance-none"
                 >
                   {[
                     "Apartment / Flat",
@@ -320,7 +320,7 @@ export default function PostListingPage() {
                   type="button" 
                   onClick={generateAiDescription}
                   disabled={isAiLoading}
-                  className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors border border-emerald-500/30 rounded-full text-sm font-medium"
+                  className="flex items-center gap-2 px-4 py-2 bg-[#D4AF37]/10 text-[#D4AF37] hover:bg-[#D4AF37]/20 transition-colors border border-[#D4AF37]/30 rounded-full text-sm font-medium"
                 >
                   <Sparkles className="w-4 h-4" />
                   {isAiLoading ? "Generating..." : "Generate AI Description"}
@@ -337,11 +337,11 @@ export default function PostListingPage() {
                   }}
                   placeholder="Enter description or use AI Auto-write..."
                   rows={6}
-                  className="w-full bg-[#1A1A1A] border border-gray-700/50 text-white placeholder:text-gray-500 rounded-3xl px-5 py-4 outline-none focus:border-emerald-500/50 transition-all resize-none"
+                  className="w-full bg-[#1A1A1A] border border-gray-700/50 text-white placeholder:text-gray-500 rounded-3xl px-5 py-4 outline-none focus:border-[#D4AF37]/50 transition-all resize-none"
                   required
                 />
                 {isAiGenerated && (
-                  <p className="text-[10px] text-emerald-500/80 px-2 mt-1">
+                  <p className="text-[10px] text-[#D4AF37]/80 px-2 mt-1">
                     * This is an AI-written description. AI can make mistakes, kindly review the description carefully.
                   </p>
                 )}

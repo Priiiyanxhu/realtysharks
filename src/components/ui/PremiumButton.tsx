@@ -10,8 +10,8 @@ export function PremiumButton({ children, className = '', ...props }: HTMLMotion
       whileTap={{ scale: 0.95 }}
       className={cn(
         "relative overflow-hidden font-semibold transition-all duration-300 px-6 py-3",
-        "bg-gradient-to-r from-emerald-400 to-emerald-600 text-white rounded-full shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)]",
-        "hover:from-emerald-300 hover:to-emerald-500 hover:shadow-[inset_0_1px_1px_rgba(255,255,255,0.6),0_0_20px_rgba(16,185,129,0.4)] hover:-translate-y-0.5",
+        "bg-gradient-to-r from-[#D4AF37] to-[#FACC15] text-[#0B1120] rounded-full shadow-[inset_0_1px_1px_rgba(255,255,255,0.8)]",
+        "hover:from-[#FACC15] hover:to-[#D4AF37] hover:shadow-[inset_0_1px_1px_rgba(255,255,255,0.9),0_0_20px_rgba(212,175,55,0.6)] hover:-translate-y-0.5",
         "active:scale-95 active:translate-y-0",
         "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:translate-y-0",
         className

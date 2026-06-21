@@ -16,7 +16,7 @@ interface PriceDisplayProps {
 
 export function PriceDisplay({ amount, className = '' }: PriceDisplayProps) {
   return (
-    <span className={`font-mono text-emerald-500 font-bold tracking-tight ${className}`}>
+    <span className={`font-mono text-[#D4AF37] font-bold tracking-tight ${className}`}>
       {formatIndianCurrency(amount)}
     </span>
   );

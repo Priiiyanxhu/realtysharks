@@ -47,8 +47,8 @@ export default function ListingDetailsPage() {
     return (
       <div className="min-h-screen flex items-center justify-center pt-[calc(env(safe-area-inset-top)+2rem)]">
         <div className="animate-pulse flex flex-col items-center">
-          <div className="w-12 h-12 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin mb-4"></div>
-          <p className="text-emerald-500/50 font-mono text-sm tracking-widest">LOADING LUXURY</p>
+          <div className="w-12 h-12 border-4 border-[#D4AF37]/20 border-t-[#D4AF37] rounded-full animate-spin mb-4"></div>
+          <p className="text-[#D4AF37]/50 font-mono text-sm tracking-widest uppercase">Loading Luxury</p>
         </div>
       </div>
     );
@@ -91,7 +91,7 @@ export default function ListingDetailsPage() {
   return (
     <div className="min-h-screen pb-24">
       {/* Edge-to-Edge Hero Cover Carousel */}
-      <div className="relative w-full h-[60vh] md:h-[75vh] bg-[#050505] overflow-hidden group">
+      <div className="relative w-full h-[60vh] md:h-[75vh] bg-[#0B1120] overflow-hidden group">
         <div 
           className="flex w-full h-full overflow-x-auto snap-x snap-mandatory no-scrollbar"
           onScroll={(e) => {
@@ -132,7 +132,7 @@ export default function ListingDetailsPage() {
           </div>
         )}
 
-        <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/40 to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0B1120] via-[#0B1120]/40 to-transparent pointer-events-none" />
         
         {/* Top Nav Overlay */}
         <div className="absolute top-[calc(env(safe-area-inset-top)+2rem)] left-4 md:left-10 z-50">
@@ -153,9 +153,9 @@ export default function ListingDetailsPage() {
               transition={{ delay: 0.2 }}
               className="flex items-center gap-3 mb-4"
             >
-              <div className="bg-emerald-500/20 backdrop-blur-md border border-emerald-500/30 px-3 py-1.5 rounded-full flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                <span className="text-emerald-400 text-xs font-bold uppercase tracking-widest">Verified Premium</span>
+              <div className="bg-[#D4AF37]/20 backdrop-blur-md border border-[#D4AF37]/30 px-3 py-1.5 rounded-full flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-[#D4AF37]" />
+                <span className="text-[#D4AF37] text-xs font-bold uppercase tracking-widest">Verified Premium</span>
               </div>
               <div className="bg-white/10 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-full flex items-center gap-2">
                 <Clock className="w-4 h-4 text-white/70" />
@@ -178,9 +178,9 @@ export default function ListingDetailsPage() {
               transition={{ delay: 0.4 }}
               className="flex flex-wrap items-center gap-6 text-white/70"
             >
-              <div className="flex items-center gap-2"><MapPin className="w-5 h-5 text-emerald-400" /> {listing.city} {listing.locality ? `• ${listing.locality}` : ''}</div>
-              <div className="flex items-center gap-2"><Bed className="w-5 h-5 text-emerald-400" /> {listing.configuration}</div>
-              <div className="flex items-center gap-2"><Maximize className="w-5 h-5 text-emerald-400" /> {listing.square_feet?.toLocaleString()} sq.ft</div>
+              <div className="flex items-center gap-2"><MapPin className="w-5 h-5 text-[#D4AF37]" /> {listing.city} {listing.locality ? `• ${listing.locality}` : ''}</div>
+              <div className="flex items-center gap-2"><Bed className="w-5 h-5 text-[#D4AF37]" /> {listing.configuration}</div>
+              <div className="flex items-center gap-2"><Maximize className="w-5 h-5 text-[#D4AF37]" /> {listing.square_feet?.toLocaleString()} sq.ft</div>
             </motion.div>
           </div>
         </div>
@@ -196,7 +196,7 @@ export default function ListingDetailsPage() {
           <GlassCard className="p-6 grid grid-cols-2 md:grid-cols-4 gap-6 divide-x divide-white/10">
             <div className="px-4 first:px-0">
               <p className="text-xs text-white/50 uppercase tracking-widest mb-1">Asking Price</p>
-              <p className="text-2xl font-light text-emerald-400">₹ {(listing.price_inr / 10000000).toFixed(2)} Cr</p>
+              <p className="text-2xl font-light text-[#D4AF37]">₹ {(listing.price_inr / 10000000).toFixed(2)} Cr</p>
             </div>
             <div className="px-4">
               <p className="text-xs text-white/50 uppercase tracking-widest mb-1">Price per Sq.Ft</p>
@@ -215,7 +215,7 @@ export default function ListingDetailsPage() {
           {/* AI Description */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 mb-6">
-              <Sparkles className="w-5 h-5 text-emerald-400" />
+              <Sparkles className="w-5 h-5 text-[#D4AF37]" />
               <h2 className="text-2xl font-light text-white">Executive Summary</h2>
             </div>
             <div className="prose prose-invert max-w-none text-white/80 leading-relaxed font-light text-lg">
@@ -242,13 +242,13 @@ export default function ListingDetailsPage() {
                     {broker?.full_name?.charAt(0) || "B"}
                   </div>
                 )}
-                <div className="absolute bottom-0 right-0 bg-emerald-500 rounded-full p-1 border-2 border-[#050505]">
-                  <ShieldCheck className="w-3 h-3 text-[#050505]" />
+                <div className="absolute bottom-0 right-0 bg-[#D4AF37] rounded-full p-1 border-2 border-[#0B1120]">
+                  <ShieldCheck className="w-3 h-3 text-[#0B1120]" />
                 </div>
               </div>
 
               <h3 className="text-xl font-semibold text-white mb-1">{broker?.full_name || "Listing Broker"}</h3>
-              <p className="text-emerald-400 font-medium text-sm mb-6">{broker?.agency_name || "Independent Consultant"}</p>
+              <p className="text-[#D4AF37] font-bold text-[10px] tracking-widest uppercase mb-6">{broker?.agency_name || "Independent Consultant"}</p>
 
               <div className="w-full space-y-4">
                 <button 
