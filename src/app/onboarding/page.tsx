@@ -9,7 +9,7 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { Check, UploadCloud, User, Building, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const ROLES = ["Broker", "SalesMate", "Dealer", "Consultant", "Channel Partner", "Developer"];
+const ROLES = ["SalesMate", "Broker", "Dealer", "Consultant", "Channel Partner", "Developer", "Builder Sales", "Project Co-ordinator", "Marketing Agency"];
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -96,7 +96,7 @@ export default function OnboardingPage() {
 
       if (profileError) throw profileError;
 
-      router.push("/dashboard");
+      router.push("/profile");
     } catch (err: any) {
       setError(err.message || "Failed to complete onboarding");
       setLoading(false);

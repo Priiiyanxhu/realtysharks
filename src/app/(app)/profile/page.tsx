@@ -5,7 +5,7 @@ import { supabase } from "@/utils/supabase/client";
 import { PropertyCard } from "@/components/ui/PropertyCard";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { User, Building, Phone, Save, Plus, BadgeCheck } from "lucide-react";
+import { User, Building, Phone, Save, Plus, BadgeCheck, UploadCloud, Image as ImageIcon, Briefcase, FileText, ShieldAlert, Star } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function ProfilePage() {
@@ -22,9 +22,15 @@ export default function ProfilePage() {
     full_name: "",
     agency_name: "",
     phone_number: "",
-    rera_number: ""
+    rera_number: "",
+    core_expertise: "",
+    full_name_aadhar: "",
+    aadhar_no: ""
   });
   const [reraError, setReraError] = useState("");
+  const [kycFile, setKycFile] = useState<File | null>(null);
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -49,7 +55,10 @@ export default function ProfilePage() {
           full_name: profileData.full_name || "",
           agency_name: profileData.agency_name || "",
           phone_number: profileData.phone_number || "",
-          rera_number: profileData.rera_number || ""
+          rera_number: profileData.rera_number || "",
+          core_expertise: profileData.core_expertise ? profileData.core_expertise.join(", ") : "",
+          full_name_aadhar: profileData.full_name_aadhar || "",
+          aadhar_no: profileData.aadhar_no || ""
         });
 
         // Fetch User's Listings
@@ -95,23 +104,76 @@ export default function ProfilePage() {
     }
 
     setIsSaving(true);
-    const { error } = await supabase
-      .from("profiles")
-      .update({
-        full_name: formData.full_name,
-        agency_name: formData.agency_name,
-        phone_number: formData.phone_number,
-        rera_number: formData.rera_number.trim().toUpperCase(),
-        verified: isVerified,
-        updated_at: new Date().toISOString()
-      })
-      .eq("id", profile.id);
+    try {
+      let avatarUrl = profile.avatar_url;
+      let coverUrl = profile.cover_url;
+      let kycStatus = profile.kyc_status;
+
+      // Upload Avatar
+      if (avatarFile) {
+        const fileExt = avatarFile.name.split('.').pop();
+        const filePath = `${profile.id}/avatar.${fileExt}`;
+        const { error: avatarError } = await supabase.storage.from('avatars').upload(filePath, avatarFile, { upsert: true });
+        if (!avatarError) {
+          const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
+          avatarUrl = publicUrl;
+        }
+      }
+
+      // Upload Cover
+      if (coverFile) {
+        const fileExt = coverFile.name.split('.').pop();
+        const filePath = `${profile.id}/cover.${fileExt}`;
+        const { error: coverError } = await supabase.storage.from('avatars').upload(filePath, coverFile, { upsert: true });
+        if (!coverError) {
+          const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
+          coverUrl = publicUrl;
+        }
+      }
+
+      // Upload KYC
+      if (kycFile) {
+        const fileExt = kycFile.name.split('.').pop();
+        const filePath = `${profile.id}/kyc_document.${fileExt}`;
+        const { error: kycError } = await supabase.storage.from('kyc-documents').upload(filePath, kycFile, { upsert: true });
+        if (!kycError) {
+          kycStatus = 'pending'; // Reset to pending if they re-upload
+        }
+      }
+
+      // Format Expertise Array
+      const expertiseArray = formData.core_expertise
+        .split(',')
+        .map(e => e.trim())
+        .filter(e => e.length > 0);
+
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          full_name: formData.full_name,
+          agency_name: formData.agency_name,
+          phone_number: formData.phone_number,
+          rera_number: formData.rera_number.trim().toUpperCase(),
+          verified: isVerified,
+          core_expertise: expertiseArray,
+          full_name_aadhar: formData.full_name_aadhar,
+          aadhar_no: formData.aadhar_no,
+          avatar_url: avatarUrl,
+          cover_url: coverUrl,
+          kyc_status: kycStatus,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", profile.id);
+
+      if (error) throw error;
       
-    setIsSaving(false);
-    if (error) {
-      alert("Failed to update profile: " + error.message);
-    } else {
+      // Update local state
+      setProfile({...profile, avatar_url: avatarUrl, cover_url: coverUrl, kyc_status: kycStatus});
       alert("Profile updated successfully!");
+    } catch (err: any) {
+      alert("Failed to update profile: " + err.message);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -180,23 +242,43 @@ export default function ProfilePage() {
           <GlassCard className="p-6">
             <form onSubmit={handleSaveProfile} className="space-y-6">
               
-              {/* Avatar Mockup */}
-              <div className="flex items-center gap-4 border-b border-white/5 pb-6">
-                <div className="w-20 h-20 rounded-full bg-slate-800 overflow-hidden border border-white/10 shrink-0">
-                  {profile?.avatar_url ? (
+              {/* Cover & Avatar Mockup */}
+              <div className="relative mb-8 pb-8 border-b border-white/5">
+                {/* Cover Image */}
+                <div className="w-full h-32 bg-slate-800 rounded-xl overflow-hidden relative group">
+                  {profile?.cover_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                    <img src={profile.cover_url} alt="Cover" className="w-full h-full object-cover opacity-60" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-white/50 text-2xl font-light">
-                      {formData.full_name.charAt(0) || "U"}
+                    <div className="w-full h-full flex items-center justify-center text-white/20">
+                      <ImageIcon className="w-8 h-8" />
                     </div>
                   )}
+                  <label className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                    <span className="text-xs text-white font-medium bg-black/50 px-3 py-1 rounded-full">Change Cover</span>
+                    <input type="file" accept="image/*" className="hidden" onChange={(e) => setCoverFile(e.target.files?.[0] || null)} />
+                  </label>
                 </div>
-                <div>
-                  <button type="button" className="text-xs text-emerald-500 font-medium bg-emerald-500/10 px-3 py-1.5 rounded-lg hover:bg-emerald-500/20 transition-colors">
-                    Change Picture
-                  </button>
-                  <p className="text-[10px] text-white/40 mt-2 max-w-[150px]">JPG or PNG. Max size of 5MB.</p>
+
+                {/* Avatar Image */}
+                <div className="absolute -bottom-6 left-6 flex items-end gap-4">
+                  <div className="w-20 h-20 rounded-full bg-slate-900 border-4 border-[#0F1419] overflow-hidden relative group">
+                    {profile?.avatar_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-white/50 text-2xl font-light">
+                        {formData.full_name.charAt(0) || "U"}
+                      </div>
+                    )}
+                    <label className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                      <UploadCloud className="w-5 h-5 text-white" />
+                      <input type="file" accept="image/*" className="hidden" onChange={(e) => setAvatarFile(e.target.files?.[0] || null)} />
+                    </label>
+                  </div>
+                  <div className="pb-2">
+                    <p className="text-[10px] text-white/40 max-w-[150px]">{(avatarFile || coverFile) ? "Images staged for upload. Click Save." : "JPG or PNG. Max size 5MB."}</p>
+                  </div>
                 </div>
               </div>
 
@@ -265,6 +347,69 @@ export default function ProfilePage() {
                     <p className="text-xs text-white/30 mt-1.5">Enter to unlock the "Verified Broker" badge.</p>
                   )}
                 </div>
+
+                <div>
+                  <label className="text-xs text-white/50 font-medium mb-1.5 block uppercase tracking-wider">Core Expertise</label>
+                  <div className="relative">
+                    <Star className="w-4 h-4 text-white/30 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input 
+                      type="text" 
+                      value={formData.core_expertise}
+                      onChange={(e) => setFormData({...formData, core_expertise: e.target.value})}
+                      placeholder="e.g. Luxury Assets, Commercial, Institutional"
+                      className="w-full bg-black/20 border border-white/10 rounded-lg py-2.5 pl-10 pr-4 text-sm text-white focus:border-emerald-500/50 focus:outline-none transition-colors"
+                    />
+                  </div>
+                  <p className="text-xs text-white/30 mt-1.5">Comma-separated skills to display on your public profile.</p>
+                </div>
+              </div>
+
+              {/* KYC Section */}
+              <div className="p-4 bg-emerald-500/5 border border-emerald-500/20 rounded-xl space-y-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <ShieldAlert className={`w-5 h-5 ${profile?.kyc_status === 'verified' ? 'text-emerald-400' : 'text-amber-400'}`} />
+                  <h3 className="text-sm font-semibold text-white">KYC Verification</h3>
+                  <span className="ml-auto text-[10px] uppercase tracking-widest bg-black/40 px-2 py-1 rounded text-white/70">
+                    {profile?.kyc_status || 'Pending'}
+                  </span>
+                </div>
+                
+                {profile?.kyc_status !== 'verified' && (
+                  <>
+                    <p className="text-xs text-white/60">Complete your KYC to ensure fairness and trust in the RealtySharks network.</p>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-[10px] text-white/50 uppercase tracking-wider mb-1 block">Name on Aadhar</label>
+                        <input 
+                          type="text" 
+                          value={formData.full_name_aadhar}
+                          onChange={(e) => setFormData({...formData, full_name_aadhar: e.target.value})}
+                          className="w-full bg-black/40 border border-white/10 rounded py-2 px-3 text-xs text-white focus:border-emerald-500/50 focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] text-white/50 uppercase tracking-wider mb-1 block">Aadhar Number</label>
+                        <input 
+                          type="text" 
+                          value={formData.aadhar_no}
+                          onChange={(e) => setFormData({...formData, aadhar_no: e.target.value})}
+                          placeholder="XXXX-XXXX-XXXX"
+                          className="w-full bg-black/40 border border-white/10 rounded py-2 px-3 text-xs text-white focus:border-emerald-500/50 focus:outline-none"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-[10px] text-white/50 uppercase tracking-wider mb-1 block">Upload Aadhar / PAN / Business Card</label>
+                      <label className="flex items-center justify-center w-full h-20 border-2 border-dashed border-white/20 rounded-lg hover:bg-white/5 transition-colors cursor-pointer">
+                        <div className="flex flex-col items-center">
+                          <FileText className="w-5 h-5 text-white/40 mb-1" />
+                          <span className="text-xs text-white/40">{kycFile ? kycFile.name : "Tap to upload secure PDF/Image"}</span>
+                        </div>
+                        <input type="file" className="hidden" onChange={(e) => setKycFile(e.target.files?.[0] || null)} />
+                      </label>
+                    </div>
+                  </>
+                )}
               </div>
 
               <button 
