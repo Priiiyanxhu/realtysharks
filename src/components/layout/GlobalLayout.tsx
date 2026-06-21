@@ -63,7 +63,7 @@ export function GlobalLayout({ children }: { children: React.ReactNode }) {
   ];
 
   return (
-    <div className="flex min-h-[100dvh] bg-[#050505] text-white overflow-x-hidden">
+    <div className="flex min-h-[100dvh] w-full bg-[#050505] text-white overflow-x-hidden">
       
       {/* Desktop Persistent Sidebar (Floating Pill) */}
       <aside className="hidden md:flex flex-col fixed left-6 top-6 bottom-6 w-64 rounded-[2rem] border border-white/20 bg-black/30 backdrop-blur-3xl z-50 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]">

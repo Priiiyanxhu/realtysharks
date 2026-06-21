@@ -7,8 +7,8 @@
 }
 
 :root {
-  --background: #ffffff;
-  --foreground: #0f172a;
+  --background: #050505;
+  --foreground: #ffffff;
   
   /* Capacitor / Mobile Safe Areas */
   --sat: env(safe-area-inset-top);
@@ -23,6 +23,9 @@ body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  width: 100%;
+  min-height: 100vh;
   
   /* Mobile Optimizations */
   -webkit-touch-callout: none;
