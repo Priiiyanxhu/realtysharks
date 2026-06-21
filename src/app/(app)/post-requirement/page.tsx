@@ -205,9 +205,24 @@ export default function PostRequirementPage() {
                   onChange={(e) => setPropertyType(e.target.value)}
                   className="w-full bg-[#1A1A1A] border border-gray-700/50 text-white rounded-full px-4 py-3 outline-none focus:border-emerald-500/50 transition-all appearance-none"
                 >
-                  <option value="Residential">Residential</option>
-                  <option value="Commercial">Commercial</option>
-                  <option value="Land">Land</option>
+                  {[
+                    "Apartment / Flat",
+                    "Independent House / Villa",
+                    "Builder Floor",
+                    "Studio Apartment",
+                    "Service Apartment",
+                    "Penthouse",
+                    "Residential Plot",
+                    "Commercial Office Space",
+                    "Commercial Shop",
+                    "Co-working Space",
+                    "Industrial Land / Plot",
+                    "Agricultural Land",
+                    "Farm House",
+                    "Warehouse / Godown"
+                  ].map((type) => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
                 </select>
               </div>
 
