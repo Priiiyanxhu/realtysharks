@@ -14,7 +14,7 @@ interface MatchProperty {
   city: string;
   configuration: string;
   images: string[];
-  profiles: { agency_name: string; full_name: string };
+  profiles: any;
 }
 
 export function AiMatchesGrid() {
