@@ -3,8 +3,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
-import { motion } from "framer-motion";
-import { MapPin, Bed, Maximize, ShieldCheck, Sparkles, MessageSquare, Clock, ArrowLeft } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { MapPin, Bed, Maximize, ShieldCheck, Sparkles, MessageSquare, Clock, ArrowLeft, X } from "lucide-react";
 import Image from "next/image";
 import { PremiumButton } from "@/components/ui/PremiumButton";
 import { GlassCard } from "@/components/ui/GlassCard";
@@ -16,6 +16,8 @@ export default function ListingDetailsPage() {
   const [listing, setListing] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
 
   useEffect(() => {
     async function fetchListing() {
@@ -88,16 +90,49 @@ export default function ListingDetailsPage() {
 
   return (
     <div className="min-h-screen pb-24">
-      {/* Edge-to-Edge Hero Cover */}
-      <div className="relative w-full h-[60vh] md:h-[75vh] bg-[#050505] overflow-hidden">
-        <Image 
-          src={coverImage}
-          alt={listing.title}
-          fill
-          className="object-cover opacity-60"
-          unoptimized
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/40 to-transparent" />
+      {/* Edge-to-Edge Hero Cover Carousel */}
+      <div className="relative w-full h-[60vh] md:h-[75vh] bg-[#050505] overflow-hidden group">
+        <div 
+          className="flex w-full h-full overflow-x-auto snap-x snap-mandatory no-scrollbar"
+          onScroll={(e) => {
+            const el = e.currentTarget;
+            const index = Math.round(el.scrollLeft / el.clientWidth);
+            if (!lightboxOpen) setLightboxIndex(index);
+          }}
+        >
+          {images.map((img: string, idx: number) => (
+            <div 
+              key={idx} 
+              className="relative w-full h-full flex-shrink-0 snap-center cursor-pointer"
+              onClick={() => {
+                setLightboxIndex(idx);
+                setLightboxOpen(true);
+              }}
+            >
+              <Image 
+                src={img}
+                alt={`${listing.title} - Image ${idx + 1}`}
+                fill
+                className="object-cover opacity-60 hover:opacity-80 transition-opacity duration-500"
+                unoptimized
+              />
+            </div>
+          ))}
+        </div>
+        
+        {/* Navigation Dots */}
+        {images.length > 1 && (
+          <div className="absolute bottom-[calc(env(safe-area-inset-bottom)+12rem)] md:bottom-12 right-6 flex gap-2 z-30 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
+            {images.map((_, idx) => (
+              <div 
+                key={idx} 
+                className={`w-1.5 h-1.5 rounded-full transition-colors ${idx === lightboxIndex ? 'bg-white' : 'bg-white/30'}`} 
+              />
+            ))}
+          </div>
+        )}
+
+        <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/40 to-transparent pointer-events-none" />
         
         {/* Top Nav Overlay */}
         <div className="absolute top-[calc(env(safe-area-inset-top)+2rem)] left-4 md:left-10 z-50">
@@ -190,20 +225,6 @@ export default function ListingDetailsPage() {
             </div>
           </div>
 
-          {/* Image Gallery (If multiple) */}
-          {images.length > 1 && (
-            <div className="pt-8 border-t border-white/10">
-              <h2 className="text-2xl font-light text-white mb-6">Gallery</h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {images.slice(1).map((img: string, idx: number) => (
-                  <div key={idx} className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden group">
-                    <Image src={img} alt="Gallery image" fill className="object-cover group-hover:scale-105 transition-transform duration-700" unoptimized />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
         </div>
 
         {/* Right Column: Floating Broker Card */}
@@ -246,6 +267,56 @@ export default function ListingDetailsPage() {
         </div>
 
       </div>
+
+      {/* Fullscreen Lightbox */}
+      <AnimatePresence>
+        {lightboxOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex flex-col"
+          >
+            <div className="flex items-center justify-between p-6 pt-[calc(env(safe-area-inset-top)+1rem)]">
+              <p className="text-white/50 font-mono text-sm">{lightboxIndex + 1} / {images.length}</p>
+              <button 
+                onClick={() => setLightboxOpen(false)}
+                className="p-2 rounded-full bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <div className="flex-1 relative w-full flex items-center justify-center overflow-hidden pb-10">
+              <div className="flex w-full h-full overflow-x-auto snap-x snap-mandatory no-scrollbar"
+                   ref={(el) => {
+                     if (el) {
+                       el.scrollTo({ left: el.clientWidth * lightboxIndex, behavior: 'instant' });
+                     }
+                   }}
+                   onScroll={(e) => {
+                     const el = e.currentTarget;
+                     const index = Math.round(el.scrollLeft / el.clientWidth);
+                     if (index !== lightboxIndex) setLightboxIndex(index);
+                   }}
+              >
+                {images.map((img: string, idx: number) => (
+                  <div key={idx} className="relative w-full h-full flex-shrink-0 snap-center p-2 md:p-8">
+                    <Image 
+                      src={img}
+                      alt={`Fullscreen Image ${idx + 1}`}
+                      fill
+                      className="object-contain"
+                      unoptimized
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }
