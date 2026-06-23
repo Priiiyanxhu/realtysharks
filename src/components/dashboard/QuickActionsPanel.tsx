@@ -7,7 +7,7 @@ import { ShieldCheck, LogOut } from "lucide-react";
 import { supabase } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 
-export function QuickActionsPanel({ profile }: { profile: { role?: string; full_name?: string } | null }) {
+export function QuickActionsPanel({ profile }: { profile: { role?: string; full_name?: string; avatar_url?: string; agency_name?: string; activeListingsCount?: number; activeReqsCount?: number } | null }) {
   const router = useRouter();
 
   const handleLogout = async () => {
