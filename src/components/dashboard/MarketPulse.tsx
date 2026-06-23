@@ -103,8 +103,8 @@ export function MarketPulse() {
         </div>
       </div>
 
-      {/* Interactive Globe Canvas Container */}
-      <div className="absolute right-[-20%] top-1/2 -translate-y-1/2 w-[600px] h-[600px] pointer-events-auto mix-blend-screen overflow-hidden">
+      {/* Interactive Globe Canvas Container - Pointer events disabled on mobile to prevent scroll hijack */}
+      <div className="absolute right-[-20%] top-1/2 -translate-y-1/2 w-[600px] h-[600px] pointer-events-none md:pointer-events-auto mix-blend-screen overflow-hidden">
         <MarketSphere />
       </div>
     </div>

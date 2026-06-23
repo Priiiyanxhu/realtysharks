@@ -160,7 +160,7 @@ export function NetworkFeed() {
   }, []);
 
   return (
-    <div className="bg-[#121A2F]/80 backdrop-blur-xl border border-white/5 rounded-3xl p-6 relative overflow-hidden group flex flex-col h-full min-h-[400px] max-h-[600px]">
+    <div className="bg-[#121A2F]/80 backdrop-blur-xl border border-white/5 rounded-3xl p-6 relative overflow-hidden group flex flex-col h-full min-h-[400px] md:max-h-[600px]">
       
       {/* Decorative Gradient Line */}
       <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent opacity-50" />
@@ -179,7 +179,7 @@ export function NetworkFeed() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto pr-2 no-scrollbar">
+      <div className="flex-1 overflow-visible md:overflow-y-auto pr-2 no-scrollbar">
         <div className="space-y-0">
           {feedData.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 text-center px-4 border border-dashed border-white/10 rounded-2xl bg-black/20">
