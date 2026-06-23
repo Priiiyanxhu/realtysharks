@@ -145,7 +145,7 @@ export default function ListingDetailsPage() {
         </div>
 
         {/* Hero Content */}
-        <div className="absolute bottom-0 left-0 w-full p-6 md:p-12 z-20">
+        <div className="absolute bottom-0 left-0 w-full p-6 pb-16 md:p-12 md:pb-20 z-20">
           <div className="max-w-7xl mx-auto">
             <motion.div 
               initial={{ y: 20, opacity: 0 }}
