@@ -13,6 +13,7 @@ export interface FeedItemProps {
   timestamp: string;
   users?: { name: string; avatar?: string }[];
   isNew?: boolean;
+  href?: string;
 }
 
 const typeConfig: Record<FeedEventType, { icon: LucideIcon; color: string; bgColor: string }> = {
@@ -33,7 +34,7 @@ const typeConfig: Record<FeedEventType, { icon: LucideIcon; color: string; bgCol
   }
 };
 
-export function FeedItem({ type, title, description, timestamp, users, isNew }: FeedItemProps) {
+export function FeedItem({ type, title, description, timestamp, users, isNew, href }: FeedItemProps) {
   const config = typeConfig[type];
   const Icon = config.icon;
 
@@ -83,6 +84,18 @@ export function FeedItem({ type, title, description, timestamp, users, isNew }: 
             <span className="text-[10px] text-white/40 uppercase tracking-widest ml-1">
               {users.map(u => u.name.split(' ')[0]).join(', ')} involved
             </span>
+          </div>
+        )}
+        
+        {href && (
+          <div className="mt-4 pt-3 border-t border-white/5 flex justify-end">
+            <a 
+              href={href}
+              className="text-[10px] uppercase tracking-widest text-[#D4AF37] hover:text-[#FACC15] font-bold transition-colors flex items-center gap-1 group/link"
+            >
+              View Details 
+              <span className="transform transition-transform group-hover/link:translate-x-1">→</span>
+            </a>
           </div>
         )}
       </GlassCard>

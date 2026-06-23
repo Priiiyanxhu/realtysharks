@@ -8,6 +8,13 @@ import { formatDistanceToNow } from "date-fns";
 
 export function NetworkFeed() {
   const [feedData, setFeedData] = useState<FeedItemProps[]>([]);
+  const [ticker, setTicker] = useState(0);
+
+  // Force re-render every minute to keep `formatDistanceToNow` live
+  useEffect(() => {
+    const interval = setInterval(() => setTicker(t => t + 1), 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     // 1. Initial Load of recent items
@@ -34,10 +41,11 @@ export function NetworkFeed() {
               type: 'deal', // We use deal/listing as white
               title: 'New Property Listed',
               description: `${(l.profiles as any)?.full_name || 'A broker'} just listed a ${l.title} in ${l.city || 'their network'}.`,
-              timestamp: formatDistanceToNow(new Date(l.created_at), { addSuffix: true }),
+              timestamp: l.created_at, // store ISO string for live formatting below
               created_at: new Date(l.created_at).getTime(),
-              isNew: false
-            } as FeedItemProps & { created_at: number });
+              isNew: false,
+              href: `/listings/${l.id}`
+            } as any);
           });
         }
 
@@ -52,10 +60,11 @@ export function NetworkFeed() {
               type: 'chat',
               title: 'New Buyer Requirement',
               description: `${(r.profiles as any)?.full_name || 'A broker'} is looking for ${r.property_type || 'property'} in ${r.city || 'India'} (${formatBudget(r.min_budget)} - ${formatBudget(r.max_budget)}).`,
-              timestamp: formatDistanceToNow(new Date(r.created_at), { addSuffix: true }),
+              timestamp: r.created_at, // store ISO string
               created_at: new Date(r.created_at).getTime(),
-              isNew: false
-            } as FeedItemProps & { created_at: number });
+              isNew: false,
+              href: `/network/${r.id}` // Link to the public requirement details
+            } as any);
           });
         }
 
@@ -74,13 +83,15 @@ export function NetworkFeed() {
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'listings' }, (payload) => {
         const newDoc = payload.new as any;
         setFeedData(prev => {
-          const newItem: FeedItemProps = {
+          const newItem: any = {
             id: `rt-listing-${newDoc.id}`,
             type: 'match', // Highlight as new match/action
             title: 'Live Network Activity',
             description: `A new ${newDoc.title || 'property'} was just listed in ${newDoc.city || 'the network'}.`,
-            timestamp: 'Just now',
-            isNew: true
+            timestamp: new Date().toISOString(),
+            isNew: true,
+            href: `/listings/${newDoc.id}`,
+            created_at: Date.now()
           };
           return [newItem, ...prev].slice(0, 15);
         });
@@ -91,13 +102,15 @@ export function NetworkFeed() {
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'requirements' }, (payload) => {
         const newDoc = payload.new as any;
         setFeedData(prev => {
-          const newItem: FeedItemProps = {
+          const newItem: any = {
             id: `rt-req-${newDoc.id}`,
             type: 'chat',
             title: 'Live Requirement Posted',
             description: `A broker is actively seeking ${newDoc.property_type || 'property'} in ${newDoc.city || 'India'}.`,
-            timestamp: 'Just now',
-            isNew: true
+            timestamp: new Date().toISOString(),
+            isNew: true,
+            href: `/network/${newDoc.id}`,
+            created_at: Date.now()
           };
           return [newItem, ...prev].slice(0, 15);
         });
@@ -138,8 +151,13 @@ export function NetworkFeed() {
               <p className="text-xs text-white/60 font-medium uppercase tracking-wider mb-2">Connecting to Synapse...</p>
             </div>
           ) : (
-            feedData.map((item) => (
-              <FeedItem key={item.id} {...item} />
+            feedData.map((item: any) => (
+              <FeedItem 
+                key={item.id} 
+                {...item} 
+                // Re-calculate timestamp dynamically using the ticker
+                timestamp={formatDistanceToNow(new Date(item.timestamp), { addSuffix: true })} 
+              />
             ))
           )}
         </div>
