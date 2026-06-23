@@ -1,13 +1,12 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
-import createGlobe from "cobe";
+import React, { useEffect, useState } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { supabase } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
+import { MarketSphere } from "@/components/ui/MarketSphere";
 
 export function MarketPulse() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const router = useRouter();
   const [activeBrokers, setActiveBrokers] = useState<number>(0);
   const [offMarketValue, setOffMarketValue] = useState<number>(0);
@@ -67,48 +66,7 @@ export function MarketPulse() {
     return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
   };
 
-  const pointerInteracting = useRef<number | null>(null);
-  const pointerInteractionMovement = useRef(0);
 
-  useEffect(() => {
-    let phi = 0;
-
-    if (!canvasRef.current) return;
-
-    const globe = createGlobe(canvasRef.current, {
-      devicePixelRatio: 2,
-      width: 600, // Reduced rendering resolution to 600x600 for performance
-      height: 600,
-      phi: 0,
-      theta: 0.3,
-      dark: 1,
-      diffuse: 1.2,
-      mapSamples: 16000,
-      mapBrightness: 6,
-      baseColor: [0.04, 0.06, 0.12], // Midnight Slate equivalent
-      markerColor: [0.83, 0.68, 0.21], // Champagne Gold #D4AF37
-      glowColor: [0.15, 0.12, 0.04], // Goldish glow
-      markers: [
-        { location: [28.6139, 77.2090], size: 0.08 }, // Delhi
-        { location: [19.0760, 72.8777], size: 0.1 },  // Mumbai
-        { location: [12.9716, 77.5946], size: 0.08 }, // Bangalore
-        { location: [17.3850, 78.4867], size: 0.06 }, // Hyderabad
-        { location: [18.5204, 73.8567], size: 0.05 }, // Pune
-        { location: [25.2048, 55.2708], size: 0.06 }, // Dubai
-        { location: [1.3521, 103.8198], size: 0.04 }, // Singapore
-        { location: [51.5074, -0.1278], size: 0.04 }, // London (NRI)
-      ],
-      onRender: (state: Record<string, any>) => {
-        // Called on every animation frame.
-        state.phi = phi + pointerInteractionMovement.current;
-        phi += 0.003;
-      },
-    } as any);
-
-    return () => {
-      globe.destroy();
-    };
-  }, []);
 
   return (
     <div 
@@ -146,43 +104,8 @@ export function MarketPulse() {
       </div>
 
       {/* Interactive Globe Canvas Container */}
-      <div 
-        className="absolute right-[-10%] top-1/2 -translate-y-1/2 w-[500px] h-[500px] pointer-events-auto opacity-90 mix-blend-screen"
-        onPointerDown={(e) => {
-          e.stopPropagation();
-          pointerInteracting.current = e.clientX;
-          if (canvasRef.current) canvasRef.current.style.cursor = 'grabbing';
-        }}
-        onPointerUp={(e) => {
-          e.stopPropagation();
-          pointerInteracting.current = null;
-          if (canvasRef.current) canvasRef.current.style.cursor = 'grab';
-        }}
-        onPointerOut={(e) => {
-          e.stopPropagation();
-          pointerInteracting.current = null;
-          if (canvasRef.current) canvasRef.current.style.cursor = 'grab';
-        }}
-        onPointerMove={(e) => {
-          e.stopPropagation();
-          if (pointerInteracting.current !== null) {
-            const delta = e.clientX - pointerInteracting.current;
-            pointerInteractionMovement.current += delta / 200;
-            pointerInteracting.current = e.clientX;
-          }
-        }}
-      >
-        <canvas
-          ref={canvasRef}
-          style={{
-            width: "100%",
-            height: "100%",
-            contain: "layout paint size",
-            opacity: 1,
-            cursor: "grab",
-            transition: "opacity 1s ease",
-          }}
-        />
+      <div className="absolute right-[-20%] top-1/2 -translate-y-1/2 w-[600px] h-[600px] pointer-events-auto mix-blend-screen overflow-hidden">
+        <MarketSphere />
       </div>
     </div>
   );

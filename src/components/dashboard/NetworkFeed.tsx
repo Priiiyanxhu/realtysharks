@@ -2,15 +2,48 @@
 
 import React from "react";
 import { Activity } from "lucide-react";
+import { FeedItem, FeedItemProps } from "./../ui/FeedItem";
+
+const dummyFeedData: FeedItemProps[] = [
+  {
+    id: "1",
+    type: "match",
+    title: "AI Synapse Match",
+    description: "Your listing for '4 BHK Sky Villa in Worli' matched with a new requirement from a verified broker.",
+    timestamp: "2 mins ago",
+    isNew: true,
+    users: [
+      { name: "Rahul S." },
+      { name: "Priyanshu", avatar: "https://i.pravatar.cc/150?u=priyanshu" }
+    ]
+  },
+  {
+    id: "2",
+    type: "chat",
+    title: "New Message Received",
+    description: "Anjali Desai sent you a message regarding the 'Commercial Office Space in BKC'.",
+    timestamp: "1 hour ago",
+    users: [
+      { name: "Anjali D." }
+    ]
+  },
+  {
+    id: "3",
+    type: "deal",
+    title: "Deal Closed in Network",
+    description: "A major commercial lease was successfully closed in your primary operating zone (South Mumbai).",
+    timestamp: "3 hours ago"
+  }
+];
 
 export function NetworkFeed() {
   return (
-    <div className="bg-[#121A2F]/80 backdrop-blur-xl border border-white/5 rounded-3xl p-6 relative overflow-hidden group">
+    <div className="bg-[#121A2F]/80 backdrop-blur-xl border border-white/5 rounded-3xl p-6 relative overflow-hidden group flex flex-col h-full min-h-[400px]">
       
       {/* Decorative Gradient Line */}
       <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent opacity-50" />
       
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 shrink-0">
         <h3 className="text-sm font-bold tracking-widest text-white uppercase flex items-center gap-2">
           <Activity className="w-4 h-4 text-[#D4AF37]" />
           Network Feed
@@ -24,14 +57,13 @@ export function NetworkFeed() {
         </div>
       </div>
 
-      <div className="flex flex-col items-center justify-center py-10 text-center px-4 border border-dashed border-white/10 rounded-2xl bg-black/20">
-        <Activity className="w-8 h-8 text-white/20 mb-4" />
-        <p className="text-xs text-white/60 font-medium uppercase tracking-wider mb-2">Network Feed is Empty</p>
-        <p className="text-[10px] text-white/40 max-w-[200px] leading-relaxed">
-          No active properties or requests have been broadcasted to your private network yet.
-        </p>
+      <div className="flex-1 overflow-y-auto pr-2 no-scrollbar">
+        <div className="space-y-0">
+          {dummyFeedData.map((item) => (
+            <FeedItem key={item.id} {...item} />
+          ))}
+        </div>
       </div>
-
     </div>
   );
 }
