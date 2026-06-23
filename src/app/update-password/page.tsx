@@ -55,9 +55,9 @@ export default function UpdatePasswordPage() {
 
       // Password successfully updated! Send them to the dashboard.
       router.push("/dashboard");
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
-      setError(err.message || "An unexpected error occurred. Please try again.");
+      setError((err instanceof Error ? err.message : String(err)) || "An unexpected error occurred. Please try again.");
       setLoading(false);
     }
   };

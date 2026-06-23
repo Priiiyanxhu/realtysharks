@@ -97,8 +97,8 @@ export default function OnboardingPage() {
       if (profileError) throw profileError;
 
       router.push("/profile");
-    } catch (err: any) {
-      setError(err.message || "Failed to complete onboarding");
+    } catch (err) {
+      setError((err instanceof Error ? err.message : String(err)) || "Failed to complete onboarding");
       setLoading(false);
     }
   };

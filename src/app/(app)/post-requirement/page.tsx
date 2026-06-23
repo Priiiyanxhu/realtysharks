@@ -110,8 +110,8 @@ export default function PostRequirementPage() {
       if (data.error) throw new Error(data.error);
       setDescription(data.description);
       setIsAiGenerated(true);
-    } catch (err: any) {
-      setError(err?.message || "Failed to generate AI description");
+    } catch (err) {
+      setError((err instanceof Error ? (err instanceof Error ? err.message : String(err)) : String(err)) || "Failed to generate AI description");
     } finally {
       setIsAiLoading(false);
     }
@@ -166,8 +166,8 @@ export default function PostRequirementPage() {
 
       setSubmitStatus("Redirecting...");
       router.push("/profile");
-    } catch (err: any) {
-      const errorMsg = err?.message || err?.error_description || (typeof err === 'string' ? err : "Unknown error occurred.");
+    } catch (err) {
+      const errorMsg = (err instanceof Error ? err.message : String(err)) || "Unknown error occurred.";
       setError(errorMsg);
       setIsSubmitting(false);
       setSubmitStatus("");

@@ -6,8 +6,16 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { MessageSquare, X } from "lucide-react";
 
+interface NotificationData {
+  id: string;
+  senderId: string;
+  title: string;
+  avatar: string;
+  body: string;
+}
+
 export function NotificationEngine() {
-  const [notification, setNotification] = useState<any>(null);
+  const [notification, setNotification] = useState<NotificationData | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -77,7 +85,7 @@ export function NotificationEngine() {
 
               // Auto dismiss
               setTimeout(() => {
-                setNotification((prev: any) => prev?.id === newMsg.id ? null : prev);
+                setNotification((prev: NotificationData | null) => prev?.id === newMsg.id ? null : prev);
               }, 5000);
             }
           }

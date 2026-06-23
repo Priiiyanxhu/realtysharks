@@ -90,8 +90,8 @@ export default function PostListingPage() {
       if (data.error) throw new Error(data.error);
       setDescription(data.description);
       setIsAiGenerated(true);
-    } catch (err: any) {
-      setError(err?.message || "Failed to generate AI description");
+    } catch (err) {
+      setError((err instanceof Error ? (err instanceof Error ? err.message : String(err)) : String(err)) || "Failed to generate AI description");
     } finally {
       setIsAiLoading(false);
     }
@@ -160,9 +160,9 @@ export default function PostListingPage() {
       setTimeout(() => {
         router.push("/profile");
       }, 500);
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
-      setError(err.message || "An unexpected error occurred.");
+      setError((err instanceof Error ? err.message : String(err)) || "An unexpected error occurred.");
       setSubmitStatus("Submit Listing");
       setIsSubmitting(false);
     }

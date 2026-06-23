@@ -33,7 +33,7 @@ export default function ListingDetailsPage() {
 
         if (fetchError) throw fetchError;
         setListing(data);
-      } catch (err: any) {
+      } catch (err) {
         setError("Could not load listing details.");
       } finally {
         setLoading(false);
@@ -123,7 +123,7 @@ export default function ListingDetailsPage() {
         {/* Navigation Dots */}
         {images.length > 1 && (
           <div className="absolute bottom-[calc(env(safe-area-inset-bottom)+12rem)] md:bottom-12 right-6 flex gap-2 z-30 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
-            {images.map((_: any, idx: number) => (
+            {images.map((_: unknown, idx: number) => (
               <div 
                 key={idx} 
                 className={`w-1.5 h-1.5 rounded-full transition-colors ${idx === lightboxIndex ? 'bg-white' : 'bg-white/30'}`} 

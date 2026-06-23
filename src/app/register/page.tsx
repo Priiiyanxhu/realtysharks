@@ -46,9 +46,9 @@ export default function RegisterPage() {
       } else {
         throw new Error("Failed to create account.");
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
-      setError(err.message || "An unexpected error occurred during registration.");
+      setError((err instanceof Error ? err.message : String(err)) || "An unexpected error occurred during registration.");
       setLoading(false);
     }
   };

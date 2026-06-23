@@ -6,8 +6,40 @@ import { FeedItem, FeedItemProps } from "./../ui/FeedItem";
 import { supabase } from "@/utils/supabase/client";
 import { formatDistanceToNow } from "date-fns";
 
+interface ProfileNode {
+  full_name: string | null;
+}
+
+interface ListingRecord {
+  id: string;
+  title: string;
+  city: string | null;
+  created_at: string;
+  profiles?: ProfileNode | ProfileNode[] | null;
+}
+
+interface RequirementRecord {
+  id: string;
+  property_type: string | null;
+  min_budget: number;
+  max_budget: number;
+  city: string | null;
+  created_at: string;
+  profiles?: ProfileNode | ProfileNode[] | null;
+}
+
+interface FeedItemData extends FeedItemProps {
+  created_at: number;
+  iso_timestamp: string;
+}
+
+const getProfileName = (profiles: any) => {
+  if (Array.isArray(profiles)) return profiles[0]?.full_name || 'A broker';
+  return profiles?.full_name || 'A broker';
+};
+
 export function NetworkFeed() {
-  const [feedData, setFeedData] = useState<FeedItemProps[]>([]);
+  const [feedData, setFeedData] = useState<FeedItemData[]>([]);
   const [ticker, setTicker] = useState(0);
 
   // Force re-render every minute to keep `formatDistanceToNow` live
@@ -32,25 +64,26 @@ export function NetworkFeed() {
           .order('created_at', { ascending: false })
           .limit(5);
 
-        const merged: FeedItemProps[] = [];
+        const merged: FeedItemData[] = [];
 
         if (recentListings) {
-          recentListings.forEach(l => {
+          (recentListings as unknown as ListingRecord[]).forEach(l => {
             merged.push({
               id: `listing-${l.id}`,
-              type: 'deal', // We use deal/listing as white
+              type: 'deal',
               title: 'New Property Listed',
-              description: `${(l.profiles as any)?.full_name || 'A broker'} just listed a ${l.title} in ${l.city || 'their network'}.`,
-              timestamp: l.created_at, // store ISO string for live formatting below
+              description: `${getProfileName(l.profiles)} just listed a ${l.title} in ${l.city || 'their network'}.`,
+              timestamp: l.created_at, 
+              iso_timestamp: l.created_at,
               created_at: new Date(l.created_at).getTime(),
               isNew: false,
               href: `/listings/${l.id}`
-            } as any);
+            });
           });
         }
 
         if (recentReqs) {
-          recentReqs.forEach(r => {
+          (recentReqs as unknown as RequirementRecord[]).forEach(r => {
             const formatBudget = (val: number) => {
               if (val >= 10000000) return `₹${(val / 10000000).toFixed(1)} Cr`;
               return `₹${(val / 100000).toFixed(1)} L`;
@@ -59,17 +92,18 @@ export function NetworkFeed() {
               id: `req-${r.id}`,
               type: 'chat',
               title: 'New Buyer Requirement',
-              description: `${(r.profiles as any)?.full_name || 'A broker'} is looking for ${r.property_type || 'property'} in ${r.city || 'India'} (${formatBudget(r.min_budget)} - ${formatBudget(r.max_budget)}).`,
-              timestamp: r.created_at, // store ISO string
+              description: `${getProfileName(r.profiles)} is looking for ${r.property_type || 'property'} in ${r.city || 'India'} (${formatBudget(r.min_budget)} - ${formatBudget(r.max_budget)}).`,
+              timestamp: r.created_at,
+              iso_timestamp: r.created_at,
               created_at: new Date(r.created_at).getTime(),
               isNew: false,
-              href: `/network/${r.id}` // Link to the public requirement details
-            } as any);
+              href: `/network/${r.id}` 
+            });
           });
         }
 
         // Sort by newest first
-        merged.sort((a: any, b: any) => b.created_at - a.created_at);
+        merged.sort((a, b) => b.created_at - a.created_at);
         setFeedData(merged.slice(0, 15)); // Keep last 15
       } catch (err) {
         console.error("Failed to load feed", err);
@@ -81,14 +115,15 @@ export function NetworkFeed() {
     // 2. Setup Realtime Subscriptions
     const listingsSub = supabase.channel('feed-listings')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'listings' }, (payload) => {
-        const newDoc = payload.new as any;
+        const newDoc = payload.new as unknown as ListingRecord;
         setFeedData(prev => {
-          const newItem: any = {
+          const newItem: FeedItemData = {
             id: `rt-listing-${newDoc.id}`,
-            type: 'match', // Highlight as new match/action
+            type: 'match',
             title: 'Live Network Activity',
             description: `A new ${newDoc.title || 'property'} was just listed in ${newDoc.city || 'the network'}.`,
             timestamp: new Date().toISOString(),
+            iso_timestamp: new Date().toISOString(),
             isNew: true,
             href: `/listings/${newDoc.id}`,
             created_at: Date.now()
@@ -100,14 +135,15 @@ export function NetworkFeed() {
 
     const reqsSub = supabase.channel('feed-requirements')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'requirements' }, (payload) => {
-        const newDoc = payload.new as any;
+        const newDoc = payload.new as unknown as RequirementRecord;
         setFeedData(prev => {
-          const newItem: any = {
+          const newItem: FeedItemData = {
             id: `rt-req-${newDoc.id}`,
             type: 'chat',
             title: 'Live Requirement Posted',
             description: `A broker is actively seeking ${newDoc.property_type || 'property'} in ${newDoc.city || 'India'}.`,
             timestamp: new Date().toISOString(),
+            iso_timestamp: new Date().toISOString(),
             isNew: true,
             href: `/network/${newDoc.id}`,
             created_at: Date.now()
@@ -151,12 +187,12 @@ export function NetworkFeed() {
               <p className="text-xs text-white/60 font-medium uppercase tracking-wider mb-2">Connecting to Synapse...</p>
             </div>
           ) : (
-            feedData.map((item: any) => (
+            feedData.map((item) => (
               <FeedItem 
                 key={item.id} 
                 {...item} 
                 // Re-calculate timestamp dynamically using the ticker
-                timestamp={formatDistanceToNow(new Date(item.timestamp), { addSuffix: true })} 
+                timestamp={formatDistanceToNow(new Date(item.iso_timestamp || item.timestamp), { addSuffix: true })} 
               />
             ))
           )}

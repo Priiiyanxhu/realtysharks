@@ -10,7 +10,7 @@ export function GlobalLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
-  const [userProfile, setUserProfile] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<{ full_name: string; role?: string; avatar_url?: string; agency_name?: string } | null>(null);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -66,8 +66,16 @@ export function GlobalLayout({ children }: { children: React.ReactNode }) {
   ];
 
   return (
-    <div className="flex min-h-[100dvh] w-full bg-[#0B1120] text-white overflow-x-hidden font-sans">
+    <div className="flex min-h-[100dvh] w-full bg-[#0B1120] text-white overflow-x-hidden font-sans relative">
       
+      {/* Noise Grain Texture (GOAT Evolution 4) */}
+      <div 
+        className="pointer-events-none fixed inset-0 z-0 opacity-[0.015]"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+        }}
+      />
+
       {/* Desktop Persistent Sidebar (Full Height) */}
       <aside className="hidden md:flex flex-col fixed left-0 top-0 bottom-0 w-72 bg-[#0B1120] border-r border-white/5 z-50">
         <div className="p-8 pb-6 flex flex-col items-start border-b border-white/5">

@@ -34,9 +34,9 @@ export default function ForgotPasswordPage() {
       }
 
       setSuccess(true);
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
-      setError(err.message || "An unexpected error occurred. Please try again.");
+      setError((err instanceof Error ? err.message : String(err)) || "An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -53,7 +53,7 @@ export default function ForgotPasswordPage() {
 
         <div className="text-center mb-8 mt-6 relative z-10">
           <h1 className="text-2xl font-bold text-white tracking-tight mb-2">Reset Password</h1>
-          <p className="text-gray-400 text-sm">Enter your email to receive a secure recovery link.</p>
+          <p className="text-gray-400 text-sm">We&apos;ll send you a secure recovery link.</p>
         </div>
 
         {error && (

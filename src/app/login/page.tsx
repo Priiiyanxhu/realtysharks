@@ -46,9 +46,9 @@ export default function LoginPage() {
       } else {
          router.push("/dashboard");
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
-      setError(err.message || "An unexpected error occurred during login.");
+      setError((err instanceof Error ? err.message : String(err)) || "An unexpected error occurred during login.");
       setLoading(false);
     }
   };

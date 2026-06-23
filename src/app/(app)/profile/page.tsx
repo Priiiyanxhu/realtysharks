@@ -170,8 +170,8 @@ export default function ProfilePage() {
       // Update local state
       setProfile({...profile, avatar_url: avatarUrl, cover_url: coverUrl, kyc_status: kycStatus});
       alert("Profile updated successfully!");
-    } catch (err: any) {
-      alert("Failed to update profile: " + err.message);
+    } catch (err) {
+      alert("Failed to update profile: " + (err instanceof Error ? err.message : String(err)));
     } finally {
       setIsSaving(false);
     }
@@ -182,7 +182,7 @@ export default function ProfilePage() {
     const { error } = await supabase.from('listings').delete().eq('id', id);
     if (error) {
       console.error(error);
-      alert("Failed to delete listing: " + error.message);
+      alert("Failed to delete listing: " + (error instanceof Error ? error.message : String(error)));
     } else {
       setListings(listings.filter(l => l.id !== id));
     }
@@ -193,7 +193,7 @@ export default function ProfilePage() {
     const { error } = await supabase.from('requirements').delete().eq('id', id);
     if (error) {
       console.error(error);
-      alert("Failed to delete requirement: " + error.message);
+      alert("Failed to delete requirement: " + (error instanceof Error ? error.message : String(error)));
     } else {
       setRequirements(requirements.filter(r => r.id !== id));
     }
@@ -344,7 +344,7 @@ export default function ProfilePage() {
                   {reraError ? (
                     <p className="text-xs text-red-400 mt-1.5">{reraError}</p>
                   ) : (
-                    <p className="text-xs text-white/30 mt-1.5">Enter to unlock the "Verified Broker" badge.</p>
+                    <p className="text-xs text-white/30 mt-1.5">Enter to unlock the &quot;Verified Broker&quot; badge.</p>
                   )}
                 </div>
 
@@ -455,7 +455,7 @@ export default function ProfilePage() {
             <div className="space-y-4">
               {listings.length === 0 ? (
                 <div className="h-48 border border-white/5 bg-white/5 rounded-2xl flex flex-col items-center justify-center gap-4">
-                  <span className="text-white/50 text-sm">You haven't posted any listings yet.</span>
+                  <span className="text-white/50 text-sm">You haven&apos;t posted any listings yet.</span>
                   <button onClick={() => router.push('/post-listing')} className="flex items-center gap-2 text-[#D4AF37] hover:text-[#FACC15] text-sm font-bold uppercase tracking-widest">
                     <Plus className="w-4 h-4" /> Create Listing
                   </button>
@@ -488,7 +488,7 @@ export default function ProfilePage() {
             <div className="space-y-4">
               {requirements.length === 0 ? (
                 <div className="h-48 border border-white/5 bg-white/5 rounded-2xl flex flex-col items-center justify-center gap-4">
-                  <span className="text-white/50 text-sm">You haven't posted any requirements yet.</span>
+                  <span className="text-white/50 text-sm">You haven&apos;t posted any requirements yet.</span>
                   <button onClick={() => router.push('/post-requirement')} className="flex items-center gap-2 text-[#D4AF37] hover:text-[#FACC15] text-sm font-bold uppercase tracking-widest">
                     <Plus className="w-4 h-4" /> Post Requirement
                   </button>

@@ -19,8 +19,6 @@ function MessagingEngine() {
   
   // All historical messages across all chats
   const [allMessages, setAllMessages] = useState<any[]>([]);
-  // Current active chat messages
-  const [messages, setMessages] = useState<any[]>([]);
   
   const [userId, setUserId] = useState<string | null>(null);
   const [conversations, setConversations] = useState<any[]>([]);
@@ -158,23 +156,19 @@ function MessagingEngine() {
     buildConversations();
   }, [allMessages, userId, activeChat, searchParams]);
 
+  // Derive active messages
+  const messages = React.useMemo(() => {
+    if (!activeChat) return [];
+    return allMessages
+      .filter(m => (m.sender_id === userId && m.receiver_id === activeChat) || (m.sender_id === activeChat && m.receiver_id === userId))
+      .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+  }, [allMessages, userId, activeChat]);
+
   // Update active messages and mark as read
   useEffect(() => {
-    if (!activeChat) {
-      setMessages([]);
-      return;
-    }
-    const filtered = allMessages.filter(m => 
-      (m.sender_id === userId && m.receiver_id === activeChat) ||
-      (m.sender_id === activeChat && m.receiver_id === userId)
-    );
+    if (!activeChat) return;
     
-    // Sort oldest to newest for the chat window
-    const sorted = filtered.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-    setMessages(sorted);
-
-    // Mark messages as read if we received them
-    const unreadMessages = sorted.filter(m => m.receiver_id === userId && m.status !== 'read');
+    const unreadMessages = messages.filter(m => m.receiver_id === userId && m.status !== 'read');
     if (unreadMessages.length > 0) {
       const unreadIds = unreadMessages.map(m => m.id).filter(id => !id.startsWith('temp-'));
       
@@ -194,7 +188,7 @@ function MessagingEngine() {
           });
       }
     }
-  }, [activeChat, allMessages, userId]);
+  }, [activeChat, messages, userId]);
 
   // URL Params Initialization
   useEffect(() => {
@@ -205,8 +199,11 @@ function MessagingEngine() {
     const location = searchParams.get('location');
 
     if (brokerId) {
-      setActiveChat(brokerId);
-      setIsMobileListVisible(false);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      setTimeout(() => {
+        setActiveChat(brokerId);
+        setIsMobileListVisible(false);
+      }, 0);
     }
     if (listingId && title && price && location) {
       setTaggedListing({ id: listingId, title, price, location });
@@ -232,6 +229,18 @@ function MessagingEngine() {
       setTaggedListing(null);
     }
 
+    const tempId = `temp-${Date.now()}`;
+    const optimisticMessage = {
+      id: tempId,
+      sender_id: userId,
+      receiver_id: activeChat,
+      content: finalContent,
+      created_at: new Date().toISOString(),
+      status: 'sending'
+    };
+
+    setAllMessages(prev => [optimisticMessage, ...prev]);
+
     const { error } = await supabase.from('messages').insert({
       sender_id: userId,
       receiver_id: activeChat,
@@ -240,7 +249,10 @@ function MessagingEngine() {
 
     if (error) {
       console.error("Message send failed:", error);
-      alert(`Message failed to send. Database Error: ${error.message}`);
+      setAllMessages(prev => prev.filter(m => m.id !== tempId));
+      alert(`Message failed to send. Database Error: ${(error instanceof Error ? error.message : String(error))}`);
+    } else {
+      setAllMessages(prev => prev.map(m => m.id === tempId ? { ...m, status: 'sent' } : m));
     }
   };
 

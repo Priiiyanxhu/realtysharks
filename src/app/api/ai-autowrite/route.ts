@@ -24,8 +24,8 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ description: response.text });
-  } catch (error: unknown) {
-    console.error("AI Auto-write Error:", error instanceof Error ? error.message : String(error));
+  } catch (error) {
+    console.error("AI Auto-write Error:", error instanceof Error ? (error instanceof Error ? error.message : String(error)) : String(error));
     return NextResponse.json({ error: "Failed to generate description" }, { status: 500 });
   }
 }
