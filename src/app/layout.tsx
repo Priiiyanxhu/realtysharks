@@ -12,6 +12,13 @@ export const metadata: Metadata = {
   description: "Exclusive B2B real estate intelligence and broker-to-broker matching network.",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{

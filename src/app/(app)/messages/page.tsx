@@ -245,7 +245,7 @@ function MessagingEngine() {
   };
 
   return (
-    <div className="flex h-[100dvh] pt-[calc(env(safe-area-inset-top)+1rem)]">
+    <div className="flex w-full h-[100dvh] pt-[calc(env(safe-area-inset-top)+1rem)]">
       
       {/* Sidebar - Conversation List */}
       <div 
