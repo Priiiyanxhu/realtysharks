@@ -34,29 +34,77 @@ ALTER TABLE public.listings
 -- ----------------------------------------------------------------------------
 -- 2. Safe backfills from legacy columns (only where new column is NULL)
 -- ----------------------------------------------------------------------------
+-- Each legacy source column (location, bhk, price, image_url, status) may not
+-- exist in the live DB, so every backfill that references one is guarded with
+-- an information_schema existence check + dynamic EXECUTE.
+
 -- city <- location
-UPDATE public.listings
-   SET city = location
- WHERE city IS NULL
-   AND location IS NOT NULL;
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'listings'
+      AND column_name = 'location'
+  ) THEN
+    EXECUTE '
+      UPDATE public.listings
+         SET city = location
+       WHERE city IS NULL
+         AND location IS NOT NULL
+    ';
+  END IF;
+END $$;
 
 -- configuration <- bhk
-UPDATE public.listings
-   SET configuration = bhk
- WHERE configuration IS NULL
-   AND bhk IS NOT NULL;
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'listings'
+      AND column_name = 'bhk'
+  ) THEN
+    EXECUTE '
+      UPDATE public.listings
+         SET configuration = bhk
+       WHERE configuration IS NULL
+         AND bhk IS NOT NULL
+    ';
+  END IF;
+END $$;
 
 -- price_inr <- price
-UPDATE public.listings
-   SET price_inr = price
- WHERE price_inr IS NULL
-   AND price IS NOT NULL;
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'listings'
+      AND column_name = 'price'
+  ) THEN
+    EXECUTE '
+      UPDATE public.listings
+         SET price_inr = price
+       WHERE price_inr IS NULL
+         AND price IS NOT NULL
+    ';
+  END IF;
+END $$;
 
 -- images[] <- single image_url (wrap into a one-element array)
-UPDATE public.listings
-   SET images = ARRAY[image_url]
- WHERE images IS NULL
-   AND image_url IS NOT NULL;
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'listings'
+      AND column_name = 'image_url'
+  ) THEN
+    EXECUTE '
+      UPDATE public.listings
+         SET images = ARRAY[image_url]
+       WHERE images IS NULL
+         AND image_url IS NOT NULL
+    ';
+  END IF;
+END $$;
 
 -- Ensure images is never NULL (app expects an array; empty default).
 UPDATE public.listings
@@ -64,10 +112,21 @@ UPDATE public.listings
  WHERE images IS NULL;
 
 -- is_active <- (legacy status = 'active')
-UPDATE public.listings
-   SET is_active = (status = 'active')
- WHERE is_active IS NULL
-   AND status IS NOT NULL;
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'listings'
+      AND column_name = 'status'
+  ) THEN
+    EXECUTE '
+      UPDATE public.listings
+         SET is_active = (status = ''active'')
+       WHERE is_active IS NULL
+         AND status IS NOT NULL
+    ';
+  END IF;
+END $$;
 
 UPDATE public.listings
    SET is_active = true

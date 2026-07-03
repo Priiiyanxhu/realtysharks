@@ -46,16 +46,42 @@ UPDATE public.profiles
  WHERE auth_id IS NULL;
 
 -- Carry any legacy company_name forward into agency_name (do not drop either).
-UPDATE public.profiles
-   SET agency_name = company_name
- WHERE agency_name IS NULL
-   AND company_name IS NOT NULL;
+-- Legacy `company_name` may not exist in the live DB, so guard the reference.
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'profiles'
+      AND column_name = 'company_name'
+  ) THEN
+    EXECUTE '
+      UPDATE public.profiles
+         SET agency_name = company_name
+       WHERE agency_name IS NULL
+         AND company_name IS NOT NULL
+    ';
+  END IF;
+END $$;
 
 -- Carry legacy is_verified forward into verified.
-UPDATE public.profiles
-   SET verified = is_verified
- WHERE verified IS NULL
-   AND is_verified IS NOT NULL;
+-- Live DB already has `verified` and does NOT have `is_verified`, so guard it.
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'profiles'
+      AND column_name = 'is_verified'
+  ) THEN
+    EXECUTE '
+      UPDATE public.profiles
+         SET verified = is_verified
+       WHERE verified IS NULL
+         AND is_verified IS NOT NULL
+    ';
+  END IF;
+END $$;
 
 -- If a legacy KYC file was recorded, treat status as 'pending' review;
 -- otherwise leave the column default. (No PII inference.)
