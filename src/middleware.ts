@@ -36,10 +36,16 @@ export async function middleware(req: NextRequest) {
     data: { session },
   } = await supabase.auth.getSession();
 
-  const isAuthPage = req.nextUrl.pathname.startsWith("/login") || req.nextUrl.pathname.startsWith("/register");
-  const isProtectedPage = req.nextUrl.pathname.startsWith("/dashboard") || req.nextUrl.pathname.startsWith("/onboarding");
+  const pathname = req.nextUrl.pathname;
 
-  if (isProtectedPage && !session) {
+  const publicRoutes = ['/', '/login', '/register', '/forgot-password', '/reset-password'];
+  const isPublicRoute = publicRoutes.includes(pathname) || pathname.startsWith('/auth/callback');
+  const isAuthPage = pathname.startsWith("/login") || pathname.startsWith("/register");
+
+  if (!session && !isPublicRoute) {
+    if (pathname.startsWith('/api/')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
@@ -51,6 +57,14 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/onboarding/:path*", "/login", "/register"],
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - .*\.(?:svg|png|jpg|jpeg|gif|webp)$ (images)
+     */
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+  ],
 };
-

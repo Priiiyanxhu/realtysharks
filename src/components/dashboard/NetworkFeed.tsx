@@ -60,7 +60,7 @@ export function NetworkFeed() {
 
         const { data: recentReqs } = await supabase
           .from('requirements')
-          .select('id, property_type, min_budget, max_budget, city, created_at, profiles(full_name)')
+          .select('id, property_type, budget_min_inr, budget_max_inr, city, created_at, profiles(full_name)')
           .order('created_at', { ascending: false })
           .limit(5);
 
@@ -83,7 +83,7 @@ export function NetworkFeed() {
         }
 
         if (recentReqs) {
-          (recentReqs as unknown as RequirementRecord[]).forEach(r => {
+          (recentReqs as any[]).forEach(r => {
             const formatBudget = (val: number) => {
               if (val >= 10000000) return `₹${(val / 10000000).toFixed(1)} Cr`;
               return `₹${(val / 100000).toFixed(1)} L`;
@@ -92,7 +92,7 @@ export function NetworkFeed() {
               id: `req-${r.id}`,
               type: 'chat',
               title: 'New Buyer Requirement',
-              description: `${getProfileName(r.profiles)} is looking for ${r.property_type || 'property'} in ${r.city || 'India'} (${formatBudget(r.min_budget)} - ${formatBudget(r.max_budget)}).`,
+              description: `${getProfileName(r.profiles)} is looking for ${r.property_type || 'property'} in ${r.city || 'India'} (${formatBudget(r.budget_min_inr || 0)} - ${formatBudget(r.budget_max_inr || 0)}).`,
               timestamp: r.created_at,
               iso_timestamp: r.created_at,
               created_at: new Date(r.created_at).getTime(),

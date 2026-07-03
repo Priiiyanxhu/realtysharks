@@ -6,6 +6,7 @@ import { OrbitControls, Line, Sphere as DreiSphere, Stars, Float } from "@react-
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import * as THREE from "three";
 import { supabase } from "@/utils/supabase/client";
+import { useInView, useReducedMotion } from "framer-motion";
 
 // Dictionary to map cities to Lat/Lng
 const CITY_COORDINATES: Record<string, { lat: number; lng: number }> = {
@@ -118,7 +119,7 @@ function ParticleGlobe({ radius }: { radius: number }) {
   );
 }
 
-function Earth() {
+function Earth({ shouldReduceMotion }: { shouldReduceMotion: boolean | null }) {
   const groupRef = useRef<THREE.Group>(null);
   const radius = 2;
   
@@ -130,13 +131,13 @@ function Earth() {
       // Fetch recent listings to plot hot-spots
       const { data: listings } = await supabase
         .from('listings')
-        .select('city')
+        .select('location') // was 'city', replaced to match listing schema
         .limit(100);
       
       const parsedLocations: {lat: number, lng: number}[] = [];
       if (listings) {
         listings.forEach(l => {
-          const c = l.city?.toLowerCase().trim();
+          const c = l.location?.toLowerCase().trim();
           if (c && CITY_COORDINATES[c]) {
             // Add a tiny bit of jitter so same-city nodes don't overlap perfectly
             const jitterLat = CITY_COORDINATES[c].lat + (Math.random() - 0.5) * 0.5;
@@ -172,7 +173,7 @@ function Earth() {
   }, []);
 
   useFrame((state) => {
-    if (groupRef.current) {
+    if (groupRef.current && !shouldReduceMotion) {
       groupRef.current.rotation.y += 0.0015; // Slow rotation
       // Cinematic subtle float
       groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.5) * 0.05; 
@@ -205,24 +206,47 @@ function Earth() {
 }
 
 // Camera Fly-In Animation
-function Rig() {
+function Rig({ shouldReduceMotion }: { shouldReduceMotion: boolean | null }) {
   useFrame((state) => {
-    // Smoothly animate camera from z=15 to z=5 on load
-    state.camera.position.lerp(new THREE.Vector3(0, 0, 5), 0.05);
-    state.camera.lookAt(0, 0, 0);
+    if (!shouldReduceMotion) {
+      // Smoothly animate camera from z=15 to z=5 on load
+      state.camera.position.lerp(new THREE.Vector3(0, 0, 5), 0.05);
+      state.camera.lookAt(0, 0, 0);
+    } else {
+      state.camera.position.set(0, 0, 5);
+      state.camera.lookAt(0, 0, 0);
+    }
   });
   return null;
 }
 
 export function MarketSphere() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  // Pause rendering when component is off-screen to save battery
+  const isInView = useInView(containerRef, { margin: "200px" });
+  
+  // Respect accessibility preferences
+  const shouldReduceMotion = useReducedMotion();
+
+  // Determine frameloop strategy
+  let frameloop: "always" | "demand" | "never" = "always";
+  if (!isInView) {
+    frameloop = "never"; // Completely freeze background GPU usage
+  } else if (shouldReduceMotion) {
+    frameloop = "demand"; // Only render on interaction/prop changes
+  }
+
   return (
-    <div className="w-full h-full relative group">
+    <div ref={containerRef} className="w-full h-full relative group">
       {/* Vignette Overlay */}
       <div className="absolute inset-0 z-10 pointer-events-none bg-[radial-gradient(ellipse_at_center,_transparent_40%,_#0B1120_100%)] opacity-90" />
       
       <Canvas
         camera={{ position: [0, 0, 15], fov: 45 }} // Starts far away for fly-in
         gl={{ antialias: true, alpha: true, toneMapping: THREE.ReinhardToneMapping }}
+        frameloop={frameloop}
+        dpr={[1, 1.5]} // Limit pixel ratio to 1.5 for heavy mobile optimization
         className="w-full h-full"
       >
         <color attach="background" args={["#0B1120"]} />
@@ -233,13 +257,17 @@ export function MarketSphere() {
         <pointLight position={[-10, -10, -10]} intensity={1} color="#D4AF37" />
         <spotLight position={[0, 10, 0]} intensity={2} color="#FACC15" angle={0.5} penumbra={1} />
         
-        <Stars radius={100} depth={50} count={3000} factor={4} saturation={0.5} fade speed={1} />
+        <Stars radius={100} depth={50} count={3000} factor={4} saturation={0.5} fade speed={shouldReduceMotion ? 0 : 1} />
         
-        <Float speed={1.5} rotationIntensity={0.1} floatIntensity={0.2}>
-          <Earth />
-        </Float>
+        {shouldReduceMotion ? (
+          <Earth shouldReduceMotion={shouldReduceMotion} />
+        ) : (
+          <Float speed={1.5} rotationIntensity={0.1} floatIntensity={0.2}>
+            <Earth shouldReduceMotion={shouldReduceMotion} />
+          </Float>
+        )}
         
-        <Rig />
+        <Rig shouldReduceMotion={shouldReduceMotion} />
         
         {/* Post-Processing Bloom for Liquid Glass / Neon aesthetic */}
         <EffectComposer>
@@ -255,7 +283,7 @@ export function MarketSphere() {
           minDistance={3}
           maxDistance={8}
           enablePan={false} 
-          autoRotate={true}
+          autoRotate={!shouldReduceMotion}
           autoRotateSpeed={0.8}
           maxPolarAngle={Math.PI / 1.2}
           minPolarAngle={Math.PI / 4}
