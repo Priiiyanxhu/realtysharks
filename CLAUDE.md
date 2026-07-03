@@ -93,16 +93,18 @@ fix_blue.py  fix_emerald.py # One-off color-replacement scripts (housekeeping, n
 
 1. **Auth route protection** — confirm `src/proxy.ts` is active in Next 16 build; `ProtectedRoute.tsx` is client-side only.
 2. **Supabase RLS & database privacy** — profiles are world-readable (`USING (true)`), exposing `kyc_url`/`rera_number`; `conversation_participants` SELECT policy is self-referential (Supabase recursive-RLS risk).
-3. **Storage security** — only `avatars` has path-based RLS (`20260703000001`). `covers`, `listing-images`, `kyc-documents` still use broad `FOR ALL TO authenticated USING (bucket_id=...)` — any authenticated user can overwrite others' files.
+3. **Storage security** — only `avatars` has path-based RLS (`20260703000001`). `covers`, `listing-images`, `kyc-documents` still use broad `FOR ALL TO authenticated USING (bucket_id=...)` (from `20260616184500_fix_storage.sql`) — any authenticated user can read/overwrite/delete others' files. **Critical: `kyc-documents` is a private bucket, but "KYC all access" `FOR ALL TO authenticated` lets ANY logged-in user read every user's KYC docs** — highest-severity storage leak; fix first.
 4. **Chat stability** — verify hook render cascades; `useMessages` subscribes to ALL message inserts globally then filters in state.
 5. **Real search/filter** — `FilterBar`/network search partly cosmetic; confirm each control binds to a DB query.
 6. **3D performance optimization** — throttle/limit `MarketSphere`, cobe globe, and R3F canvases on mobile.
 7. **Toast/error state polish** — replace remaining `alert()` calls (~10 in `src/`) with proper toast UI.
 8. **Closed beta readiness** — schema/code consistency (see mismatches below), remove debug logs, commit capacitor config.
 
-### Known schema ↔ code mismatches (fix before relying on these paths)
-- **`agency_name` does not exist in migrations.** Migrations define `profiles.company_name`, but code (`listings`, `network`, chat hooks) selects/reads `profiles.agency_name`. Either a migration is missing or the code is wrong — reconcile before trusting profile company display.
-- **`listings.broker_id REFERENCES public.profiles(auth_id)`** in `20260616194000_create_listings.sql`, but `profiles` has **no `auth_id` column** (PK is `id`). This migration as written would fail — the live DB likely diverged from source control. Migrations are **not** guaranteed to reflect the real database; verify against the actual Supabase schema.
+### Known schema ↔ code divergence (live DB ≠ committed migrations)
+> Verified 2026-07-03: the code is **internally consistent** and treats `auth_id` + `agency_name` as real columns. They are **written** in `onboarding/page.tsx` (`auth_id: userId`, `agency_name: company`) and **read** in ~10 files via `.eq("auth_id", ...)` / `profiles.agency_name`. The committed migrations never create either column. Since the live app works, the **live Supabase `profiles` table almost certainly has `auth_id` and `agency_name` columns that were added out-of-band (dashboard/SQL) and never source-controlled.** Treat the code as the source of truth for the *live* schema — but the divergence itself is the risk.
+- **`profiles.auth_id`** — used everywhere in code as the join/lookup key (distinct from PK `id`), and `20260616194000_create_listings.sql` declares `broker_id REFERENCES public.profiles(auth_id)`. That FK requires `auth_id` to exist and be UNIQUE in the live DB. **A fresh `supabase db reset` from the committed migrations would FAIL** at the listings FK — migrations are stale. Reconcile by adding a committed migration that creates `auth_id`/`agency_name`, so migrations reproduce the live schema.
+- **`agency_name` vs `company_name`** — migrations add `profiles.company_name`; all app code reads/writes `profiles.agency_name`. `company_name` appears to be dead in code. Confirm against live schema before touching either.
+- Note: `requirements.broker_id`, `conversations.created_by`, `messages.sender_id`, `conversation_participants.user_id` all reference `auth.users(id)` directly (not `profiles`), so those paths are consistent.
 - Code relies on FK constraint names `listings_broker_id_fkey` and `requirements_broker_id_fkey` for embedded selects.
 - `src/lib/gemini.ts` is **dead code** (not imported anywhere); the real AI path is `src/app/api/ai-autowrite/route.ts`.
 

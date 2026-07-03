@@ -9,8 +9,10 @@ import { SkeletonCard } from "@/components/ui/SkeletonCard";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { SearchX, RefreshCcw } from "lucide-react";
 
-type ListingData = Record<string, unknown>;
-type RequirementData = Record<string, unknown>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ListingData = any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type RequirementData = any;
 
 type ListingFeedItem = {
   itemType: "listing";
