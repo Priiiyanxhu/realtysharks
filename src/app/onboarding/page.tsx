@@ -79,22 +79,34 @@ export default function OnboardingPage() {
         throw new Error("Could not retrieve user email from session.");
       }
 
-      // Upsert Profile
+      // Upsert Profile (public, non-sensitive columns only).
       const { error: profileError } = await supabase.from('profiles').upsert({
         id: userId,
         auth_id: userId,
-        email: currentEmail,
         full_name: name,
         role: role,
         agency_name: company,
         rera_number: rera.trim() === "" ? null : rera,
         avatar_url: avatarUrl,
-        onboarded: true, 
-        kyc_status: kycFile ? 'verified' : 'pending',
+        onboarded: true,
+        // Uploading a KYC document only submits it for review; it never
+        // self-verifies. Verification requires a real admin review (not built).
+        kyc_status: 'pending',
         updated_at: new Date().toISOString()
       }, { onConflict: 'id' });
 
       if (profileError) throw profileError;
+
+      // Email is contact PII -> owner-only profiles_private, not public profiles.
+      if (currentEmail) {
+        const { error: privateError } = await supabase.from('profiles_private').upsert({
+          auth_id: userId,
+          email: currentEmail,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'auth_id' });
+
+        if (privateError) throw privateError;
+      }
 
       router.push("/profile");
     } catch (err) {

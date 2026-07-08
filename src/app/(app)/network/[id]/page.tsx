@@ -25,9 +25,9 @@ export default function PublicBrokerProfile() {
     const fetchBrokerData = async () => {
       setLoading(true);
 
-      // Fetch Profile
+      // Fetch a peer broker's profile from the safe public view (no email/phone).
       const { data: profileData } = await supabase
-        .from('profiles')
+        .from('profiles_public')
         .select('*')
         .eq('id', brokerId)
         .single();

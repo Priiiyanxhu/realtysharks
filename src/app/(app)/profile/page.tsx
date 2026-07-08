@@ -51,14 +51,22 @@ export default function ProfilePage() {
 
       if (profileData) {
         setProfile(profileData);
+
+        // Contact + Aadhaar PII lives in the owner-only profiles_private table.
+        const { data: privateData } = await supabase
+          .from("profiles_private")
+          .select("aadhar_no, full_name_aadhar, phone_number")
+          .eq("auth_id", userId)
+          .maybeSingle();
+
         setFormData({
           full_name: profileData.full_name || "",
           agency_name: profileData.agency_name || "",
-          phone_number: profileData.phone_number || "",
+          phone_number: privateData?.phone_number || "",
           rera_number: profileData.rera_number || "",
           core_expertise: profileData.core_expertise ? profileData.core_expertise.join(", ") : "",
-          full_name_aadhar: profileData.full_name_aadhar || "",
-          aadhar_no: profileData.aadhar_no || ""
+          full_name_aadhar: privateData?.full_name_aadhar || "",
+          aadhar_no: privateData?.aadhar_no || ""
         });
 
         // Fetch User's Listings
@@ -89,10 +97,12 @@ export default function ProfilePage() {
     e.preventDefault();
     if (!profile) return;
     
-    // RERA Validation (Optional, but strict if provided)
-    let isVerified = false;
+    // RERA Validation (Optional, but strict if provided).
+    // NOTE: passing RERA format validation does NOT grant verification.
+    // `verified` is only ever set true by a real admin review (not yet built),
+    // so we never self-verify here.
     setReraError("");
-    
+
     if (formData.rera_number.trim()) {
       // Common Indian RERA Regex pattern (e.g. PRM123456789 or MAH123456)
       const reraRegex = /^[A-Z]{2,5}[0-9]{5,15}$/i;
@@ -100,7 +110,6 @@ export default function ProfilePage() {
         setReraError("Invalid RERA format. Example: PRM12345678");
         return;
       }
-      isVerified = true;
     }
 
     setIsSaving(true);
@@ -152,12 +161,8 @@ export default function ProfilePage() {
         .update({
           full_name: formData.full_name,
           agency_name: formData.agency_name,
-          phone_number: formData.phone_number,
           rera_number: formData.rera_number.trim().toUpperCase(),
-          verified: isVerified,
           core_expertise: expertiseArray,
-          full_name_aadhar: formData.full_name_aadhar,
-          aadhar_no: formData.aadhar_no,
           avatar_url: avatarUrl,
           cover_url: coverUrl,
           kyc_status: kycStatus,
@@ -166,6 +171,26 @@ export default function ProfilePage() {
         .eq("id", profile.id);
 
       if (error) throw error;
+
+      // Contact + Aadhaar PII is stored in the owner-only profiles_private
+      // table, never in the authenticated-readable profiles table.
+      if (
+        formData.phone_number.trim() ||
+        formData.aadhar_no.trim() ||
+        formData.full_name_aadhar.trim()
+      ) {
+        const { error: privateError } = await supabase
+          .from("profiles_private")
+          .upsert({
+            auth_id: profile.auth_id,
+            phone_number: formData.phone_number,
+            aadhar_no: formData.aadhar_no,
+            full_name_aadhar: formData.full_name_aadhar,
+            updated_at: new Date().toISOString()
+          }, { onConflict: "auth_id" });
+
+        if (privateError) throw privateError;
+      }
       
       // Update local state
       setProfile({...profile, avatar_url: avatarUrl, cover_url: coverUrl, kyc_status: kycStatus});

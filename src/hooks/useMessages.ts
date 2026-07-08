@@ -63,19 +63,20 @@ export function useMessages(userId: string | null) {
     };
   }, [userId]);
 
-  const markMessagesAsRead = useCallback(async (unreadIds: string[]) => {
+  const markMessagesAsRead = useCallback(async (conversationId: string, unreadIds: string[]) => {
     if (unreadIds.length === 0) return;
-    
+
     // Optimistic update
-    setAllMessages(prev => prev.map(m => 
+    setAllMessages(prev => prev.map(m =>
       unreadIds.includes(m.id) ? { ...m, status: 'read' } : m
     ));
 
-    // Database update
-    await supabase
-      .from('messages')
-      .update({ status: 'read', read_at: new Date().toISOString() })
-      .in('id', unreadIds);
+    // Read receipts touch the OTHER user's messages, which the owner-only
+    // messages UPDATE policy forbids. Go through the controlled RPC, which
+    // marks only received messages in this conversation as read.
+    await supabase.rpc('mark_conversation_messages_read', {
+      p_conversation_id: conversationId,
+    });
   }, []);
 
   const sendMessage = useCallback(async (targetConvId: string, content: string) => {

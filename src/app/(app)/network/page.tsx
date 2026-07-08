@@ -19,8 +19,9 @@ export default function NetworkPage() {
   useEffect(() => {
     const fetchNetwork = async () => {
       setLoading(true);
+      // Read cross-user broker data from the safe public view (no email/phone).
       const { data, error } = await supabase
-        .from('profiles')
+        .from('profiles_public')
         .select('*')
         .order('created_at', { ascending: false });
         

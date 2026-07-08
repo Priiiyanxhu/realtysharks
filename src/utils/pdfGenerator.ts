@@ -8,7 +8,7 @@ export const generatePdfFlyer = async (listingId: string | number) => {
     // 1. Fetch full listing data and broker profile
     const { data: listing, error } = await supabase
       .from('listings')
-      .select('*, profiles!listings_broker_id_fkey(*)')
+      .select('*, profiles!listings_broker_id_fkey(id, auth_id, full_name, agency_name, avatar_url, role, verified, kyc_status, rera_number)')
       .eq('id', listingId)
       .single();
 
@@ -104,7 +104,7 @@ export const generatePdfFlyer = async (listingId: string | number) => {
         <div>
           <p style="margin: 0; font-size: 14px; color: #888;">Contact Broker</p>
           <p style="margin: 5px 0 0 0; font-size: 18px; font-weight: bold;">${profile?.full_name || 'Verified Broker'}</p>
-          <p style="margin: 5px 0 0 0; font-size: 16px; color: #555;">${profile?.phone_number || ''}</p>
+          <p style="margin: 5px 0 0 0; font-size: 16px; color: #555;">${profile?.agency_name || ''}</p>
         </div>
         <div style="display: flex; align-items: center; gap: 15px;">
           <div style="text-align: right;">

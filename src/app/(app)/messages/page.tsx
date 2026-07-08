@@ -48,7 +48,7 @@ function MessagingEngine() {
       .filter(id => !id.startsWith('temp-'));
       
     if (unreadIds.length > 0) {
-      markMessagesAsRead(unreadIds);
+      markMessagesAsRead(activeChat, unreadIds);
     }
   }, [activeChat, messages, userId, markMessagesAsRead]);
 
