@@ -28,7 +28,7 @@ function MessagingEngine() {
   }, []);
 
   // Use Custom Hooks
-  const { allMessages, markMessagesAsRead, sendMessage } = useMessages(userId);
+  const { allMessages, markMessagesAsRead, sendMessage } = useMessages(userId, activeChat);
   const urlBrokerId = searchParams.get('brokerId');
   const { conversations, getOrCreateConversation } = useConversations(userId, allMessages, activeChat, urlBrokerId);
 
