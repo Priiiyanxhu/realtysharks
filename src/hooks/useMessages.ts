@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/utils/supabase/client';
 
 export type Message = {
@@ -22,6 +22,16 @@ function upsertMessage(messages: Message[], message: Message, tempId?: string) {
 
 export function useMessages(userId: string | null, activeConversationId: string | null) {
   const [allMessages, setAllMessages] = useState<Message[]>([]);
+  const messagesRef = useRef<Message[]>([]);
+  const failedReadMessageIdsRef = useRef(new Set<string>());
+
+  useEffect(() => {
+    messagesRef.current = allMessages;
+  }, [allMessages]);
+
+  useEffect(() => {
+    failedReadMessageIdsRef.current.clear();
+  }, [activeConversationId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -88,7 +98,13 @@ export function useMessages(userId: string | null, activeConversationId: string 
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (!active) return;
+
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.error('Realtime message subscription failed.', { status });
+        }
+      });
 
     return () => {
       active = false;
@@ -97,19 +113,51 @@ export function useMessages(userId: string | null, activeConversationId: string 
   }, [activeConversationId, userId]);
 
   const markMessagesAsRead = useCallback(async (conversationId: string, unreadIds: string[]) => {
-    if (unreadIds.length === 0) return;
+    if (unreadIds.length === 0) return { success: true } as const;
+
+    const affectedIds = unreadIds.filter(
+      (id) => !failedReadMessageIdsRef.current.has(id)
+    );
+
+    if (affectedIds.length === 0) {
+      return { success: false, error: 'read_receipt_retry_suppressed' } as const;
+    }
+
+    const previousValues = new Map(
+      messagesRef.current
+        .filter((message) => affectedIds.includes(message.id))
+        .map((message) => [
+          message.id,
+          { status: message.status, read_at: message.read_at },
+        ])
+    );
 
     // Optimistic update
     setAllMessages(prev => prev.map(m =>
-      unreadIds.includes(m.id) ? { ...m, status: 'read', read_at: new Date().toISOString() } : m
+      affectedIds.includes(m.id) ? { ...m, status: 'read', read_at: new Date().toISOString() } : m
     ));
 
     // Read receipts touch the OTHER user's messages, which the owner-only
     // messages UPDATE policy forbids. Go through the controlled RPC, which
     // marks only received messages in this conversation as read.
-    await supabase.rpc('mark_conversation_messages_read', {
+    const { error } = await supabase.rpc('mark_conversation_messages_read', {
       p_conversation_id: conversationId,
     });
+
+    if (error) {
+      affectedIds.forEach((id) => failedReadMessageIdsRef.current.add(id));
+      console.error('Failed to mark conversation messages as read.', { code: error.code });
+
+      setAllMessages((current) => current.map((message) => {
+        const previous = previousValues.get(message.id);
+        return previous ? { ...message, ...previous } : message;
+      }));
+
+      return { success: false, error: 'read_receipt_failed' } as const;
+    }
+
+    affectedIds.forEach((id) => failedReadMessageIdsRef.current.delete(id));
+    return { success: true } as const;
   }, []);
 
   const sendMessage = useCallback(async (targetConvId: string, content: string) => {
