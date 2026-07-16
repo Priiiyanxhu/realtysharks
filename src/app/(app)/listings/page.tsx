@@ -9,10 +9,42 @@ import { SkeletonCard } from "@/components/ui/SkeletonCard";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { SearchX, RefreshCcw } from "lucide-react";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ListingData = any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type RequirementData = any;
+type EmbeddedProfile = {
+  id: string;
+  full_name: string | null;
+  agency_name: string | null;
+  avatar_url: string | null;
+};
+
+type EmbeddedProfileRelation = EmbeddedProfile | EmbeddedProfile[] | null;
+
+type ListingData = {
+  id: string;
+  broker_id: string;
+  title: string | null;
+  price_inr: number | null;
+  city: string | null;
+  locality: string | null;
+  configuration: string | null;
+  property_type: string | null;
+  images: string[] | null;
+  is_active: boolean | null;
+  created_at: string;
+  profiles: EmbeddedProfileRelation;
+};
+
+type RequirementData = {
+  id: string;
+  broker_id: string;
+  details: string | null;
+  budget_min_inr: number | null;
+  budget_max_inr: number | null;
+  city: string | null;
+  property_type: string | null;
+  timeline_to_close: string | null;
+  created_at: string;
+  profiles: EmbeddedProfileRelation;
+};
 
 type ListingFeedItem = {
   itemType: "listing";
@@ -35,10 +67,19 @@ const DEFAULT_FILTERS: FilterState = {
   location: "",
   propertyType: "",
   feedType: "both",
-  status: "",
   budgetMin: "",
   budgetMax: ""
 };
+
+const sanitizePostgrestOrValue = (value: string) =>
+  (value.split(",").find((segment) => segment.trim()) || "")
+    .normalize("NFKC")
+    .replace(/[^a-zA-Z0-9\s-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const getEmbeddedProfile = (relation: EmbeddedProfileRelation) =>
+  Array.isArray(relation) ? relation[0] ?? null : relation;
 
 export default function GlobalListingsPage() {
   const [feedItems, setFeedItems] = useState<UnifiedFeedItem[]>([]);
@@ -46,6 +87,7 @@ export default function GlobalListingsPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
+  const [retryVersion, setRetryVersion] = useState(0);
 
   // Debounced specific fields to prevent excessive API calls
   const debouncedQuery = useDebouncedValue(filters.query, 400);
@@ -69,10 +111,20 @@ export default function GlobalListingsPage() {
           let query = supabase
             .from('listings')
             .select(`
-              *,
-              profiles!listings_broker_id_fkey (full_name, agency_name, avatar_url)
+              id,
+              broker_id,
+              title,
+              price_inr,
+              city,
+              locality,
+              configuration,
+              property_type,
+              images,
+              is_active,
+              created_at,
+              profiles!listings_broker_id_fkey (id, full_name, agency_name, avatar_url)
             `)
-            .eq('status', filters.status || 'active')
+            .eq("is_active", true)
             .order('created_at', { ascending: false })
             .limit(30);
 
@@ -80,34 +132,51 @@ export default function GlobalListingsPage() {
             query = query.ilike('title', `%${debouncedQuery}%`);
           }
           if (debouncedLocation) {
-            query = query.ilike('location', `%${debouncedLocation}%`);
+            const searchLocation = sanitizePostgrestOrValue(debouncedLocation);
+            if (searchLocation) {
+              query = query.or(
+                `city.ilike.%${searchLocation}%,locality.ilike.%${searchLocation}%`
+              );
+            }
           }
           if (filters.propertyType) {
             query = query.ilike('property_type', `%${filters.propertyType}%`);
           }
           if (debouncedBudgetMin) {
-            query = query.gte('price', parseFloat(debouncedBudgetMin));
+            query = query.gte('price_inr', parseFloat(debouncedBudgetMin));
           }
           if (debouncedBudgetMax) {
-            query = query.lte('price', parseFloat(debouncedBudgetMax));
+            query = query.lte('price_inr', parseFloat(debouncedBudgetMax));
           }
 
           const { data, error } = await query;
           if (error) throw error;
           
-          return (data || []).map(item => ({
-            itemType: "listing" as const,
-            id: item.id,
-            created_at: item.created_at,
-            data: item
-          }));
+          return (data || []).map(item => {
+            const listing = item as ListingData;
+
+            return {
+              itemType: "listing" as const,
+              id: listing.id,
+              created_at: listing.created_at,
+              data: listing
+            };
+          });
         };
 
         const fetchRequirements = async () => {
           let query = supabase
             .from('requirements')
             .select(`
-              *,
+              id,
+              broker_id,
+              details,
+              budget_min_inr,
+              budget_max_inr,
+              city,
+              property_type,
+              timeline_to_close,
+              created_at,
               profiles!requirements_broker_id_fkey (full_name, agency_name, avatar_url)
             `)
             .eq('is_active', true)
@@ -133,12 +202,16 @@ export default function GlobalListingsPage() {
           const { data, error } = await query;
           if (error) throw error;
 
-          return (data || []).map(item => ({
-            itemType: "requirement" as const,
-            id: item.id,
-            created_at: item.created_at,
-            data: item
-          }));
+          return (data || []).map(item => {
+            const requirement = item as RequirementData;
+
+            return {
+              itemType: "requirement" as const,
+              id: requirement.id,
+              created_at: requirement.created_at,
+              data: requirement
+            };
+          });
         };
 
         let merged: UnifiedFeedItem[] = [];
@@ -183,7 +256,7 @@ export default function GlobalListingsPage() {
     debouncedBudgetMax,
     filters.propertyType,
     filters.feedType,
-    filters.status
+    retryVersion
   ]);
 
   const handleClearFilters = () => {
@@ -211,7 +284,7 @@ export default function GlobalListingsPage() {
             <h3 className="text-white font-semibold text-lg mb-2">Something went wrong</h3>
             <p className="text-red-200/70 text-sm mb-6">{error}</p>
             <button 
-              onClick={() => setFilters({...filters})}
+              onClick={() => setRetryVersion((current) => current + 1)}
               className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg transition-colors text-sm font-medium"
             >
               Try Again
@@ -244,40 +317,46 @@ export default function GlobalListingsPage() {
             {feedItems.map((item) => {
               if (item.itemType === 'listing') {
                 const property = item.data;
+                const profile = getEmbeddedProfile(property.profiles);
                 return (
                   <PropertyCard
                     key={`listing-${item.id}`}
                     id={property.id}
-                    title={property.title}
-                    price={property.price}
-                    location={property.location}
-                    type={property.property_type}
-                    bhk={property.bhk}
-                    imageUrl={property.image_url}
+                    title={property.title || "Untitled listing"}
+                    price={property.price_inr ?? 0}
+                    location={
+                      [property.locality, property.city].filter(Boolean).join(", ")
+                      || "Location not specified"
+                    }
+                    type={property.property_type || undefined}
+                    bhk={property.configuration || "Configuration not specified"}
+                    imageUrl={property.images?.[0] || ""}
                     agent={{
-                      name: Array.isArray(property.profiles) ? property.profiles[0]?.full_name : property.profiles?.full_name || "Unknown Broker",
-                      company: Array.isArray(property.profiles) ? property.profiles[0]?.agency_name : property.profiles?.agency_name || "Independent",
-                      avatarUrl: Array.isArray(property.profiles) ? property.profiles[0]?.avatar_url : property.profiles?.avatar_url
+                      id: profile?.id,
+                      name: profile?.full_name || "Unknown Broker",
+                      company: profile?.agency_name || "Independent",
+                      avatarUrl: profile?.avatar_url || undefined
                     }}
                   />
                 );
               } else {
                 const req = item.data;
+                const profile = getEmbeddedProfile(req.profiles);
                 return (
                   <RequirementCard
                     key={`req-${item.id}`}
                     id={req.id}
-                    title={req.details}
-                    budgetMin={req.budget_min_inr}
-                    budgetMax={req.budget_max_inr}
-                    location={req.city}
-                    propertyType={req.property_type}
-                    urgency={req.timeline_to_close}
+                    title={req.details || "Buyer requirement"}
+                    budgetMin={req.budget_min_inr ?? 0}
+                    budgetMax={req.budget_max_inr ?? 0}
+                    location={req.city || "Location not specified"}
+                    propertyType={req.property_type || "Property type not specified"}
+                    urgency={req.timeline_to_close || undefined}
                     agent={{
                       id: req.broker_id,
-                      name: Array.isArray(req.profiles) ? req.profiles[0]?.full_name : req.profiles?.full_name || "Unknown Broker",
-                      company: Array.isArray(req.profiles) ? req.profiles[0]?.agency_name : req.profiles?.agency_name || "Independent",
-                      avatarUrl: Array.isArray(req.profiles) ? req.profiles[0]?.avatar_url : req.profiles?.avatar_url
+                      name: profile?.full_name || "Unknown Broker",
+                      company: profile?.agency_name || "Independent",
+                      avatarUrl: profile?.avatar_url || undefined
                     }}
                   />
                 );
