@@ -13,8 +13,9 @@
 --   * Legacy columns (location, bhk, price, status, image_url) are KEPT.
 --   * Backfills only touch rows where the new column IS NULL (idempotent).
 --
--- Depends on 20260703121000_reconcile_profiles.sql (adds UNIQUE(auth_id) before
--- this migration establishes listings.broker_id -> profiles(auth_id)).
+-- Depends on 20260703121000_reconcile_profiles.sql (reconciles the profile
+-- identity columns before this migration establishes listings.broker_id ->
+-- profiles(id), the canonical auth-user-backed profile primary key).
 -- ============================================================================
 
 -- ----------------------------------------------------------------------------
@@ -189,11 +190,11 @@ BEGIN
         AND pg_catalog.array_length(constraint_row.conkey, 1) = 1
         AND pg_catalog.array_length(constraint_row.confkey, 1) = 1
         AND source_attribute.attname = 'broker_id'
-        AND target_attribute.attname = 'auth_id'
+        AND target_attribute.attname = 'id'
         AND constraint_row.confdeltype = 'c'
     ) THEN
       RAISE EXCEPTION
-        'Constraint listings_broker_id_fkey exists but does not match listings(broker_id) -> profiles(auth_id) ON DELETE CASCADE';
+        'Constraint listings_broker_id_fkey exists but does not match listings(broker_id) -> profiles(id) ON DELETE CASCADE';
     END IF;
   ELSE
     SELECT constraint_row.conname
@@ -213,7 +214,7 @@ BEGIN
        AND pg_catalog.array_length(constraint_row.conkey, 1) = 1
        AND pg_catalog.array_length(constraint_row.confkey, 1) = 1
        AND source_attribute.attname = 'broker_id'
-       AND target_attribute.attname = 'auth_id'
+       AND target_attribute.attname = 'id'
        AND constraint_row.confdeltype = 'c'
      ORDER BY constraint_row.oid
      LIMIT 1;
@@ -227,7 +228,7 @@ BEGIN
       ALTER TABLE public.listings
         ADD CONSTRAINT listings_broker_id_fkey
         FOREIGN KEY (broker_id)
-        REFERENCES public.profiles(auth_id)
+        REFERENCES public.profiles(id)
         ON DELETE CASCADE;
     END IF;
   END IF;

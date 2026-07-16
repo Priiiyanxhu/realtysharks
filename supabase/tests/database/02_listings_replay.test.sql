@@ -2,7 +2,7 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 
-SELECT extensions.plan(30);
+SELECT extensions.plan(48);
 
 SELECT extensions.ok(EXISTS (
   SELECT 1 FROM information_schema.columns
@@ -51,6 +51,23 @@ SELECT extensions.ok(EXISTS (
   WHERE table_schema = 'public' AND table_name = 'listings'
     AND column_name = 'is_active'
 ), 'listings.is_active exists');
+
+SELECT extensions.ok(EXISTS (
+  SELECT 1 FROM information_schema.columns
+  WHERE table_schema = 'public' AND table_name = 'listings'
+    AND column_name = 'privacy_level'
+), 'listings.privacy_level exists');
+
+SELECT extensions.is(
+  (
+    SELECT column_default
+    FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'listings'
+      AND column_name = 'privacy_level'
+  ),
+  '''public''::text',
+  'listings.privacy_level defaults to public for application-created rows'
+);
 
 SELECT extensions.ok((
   SELECT is_nullable = 'YES' FROM information_schema.columns
@@ -105,10 +122,75 @@ SELECT extensions.ok(
       AND pg_catalog.array_length(constraint_row.conkey, 1) = 1
       AND pg_catalog.array_length(constraint_row.confkey, 1) = 1
       AND source_attribute.attname = 'broker_id'
-      AND target_attribute.attname = 'auth_id'
+      AND target_attribute.attname = 'id'
       AND constraint_row.confdeltype = 'c'
   ),
   'listings broker FK has the canonical semantic shape and cascade action'
+);
+
+SELECT extensions.is(
+  (
+    SELECT pg_catalog.string_agg(
+      policyname || ':' || cmd,
+      ',' ORDER BY policyname
+    )
+    FROM pg_catalog.pg_policies
+    WHERE schemaname = 'public' AND tablename = 'listings'
+  ),
+  'listings_delete_own:DELETE,listings_insert_own:INSERT,listings_select_authenticated:SELECT,listings_update_own:UPDATE',
+  'listings has exactly the four canonical command policies'
+);
+
+SELECT extensions.ok(
+  (
+    SELECT pg_catalog.bool_and(roles = ARRAY['authenticated']::name[])
+    FROM pg_catalog.pg_policies
+    WHERE schemaname = 'public' AND tablename = 'listings'
+  ),
+  'all listings policies apply only to authenticated users'
+);
+
+SELECT extensions.ok(
+  NOT EXISTS (
+    SELECT 1
+    FROM pg_catalog.pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'listings'
+      AND policyname = 'Listings are viewable by everyone.'
+  ),
+  'the unrestricted public listings policy is absent'
+);
+
+SELECT extensions.is(
+  (
+    SELECT pg_catalog.string_agg(privilege_name, ',' ORDER BY privilege_name)
+    FROM (
+      VALUES
+        ('DELETE'), ('INSERT'), ('REFERENCES'), ('SELECT'),
+        ('TRIGGER'), ('TRUNCATE'), ('UPDATE')
+    ) AS privileges(privilege_name)
+    WHERE pg_catalog.has_table_privilege(
+      'anon', 'public.listings', privilege_name
+    )
+  ),
+  NULL::text,
+  'anon has no listings table privileges'
+);
+
+SELECT extensions.is(
+  (
+    SELECT pg_catalog.string_agg(privilege_name, ',' ORDER BY privilege_name)
+    FROM (
+      VALUES
+        ('DELETE'), ('INSERT'), ('REFERENCES'), ('SELECT'),
+        ('TRIGGER'), ('TRUNCATE'), ('UPDATE')
+    ) AS privileges(privilege_name)
+    WHERE pg_catalog.has_table_privilege(
+      'authenticated', 'public.listings', privilege_name
+    )
+  ),
+  'DELETE,INSERT,SELECT,UPDATE',
+  'authenticated has only required listings table privileges'
 );
 
 INSERT INTO auth.users (
@@ -219,6 +301,91 @@ SELECT extensions.is((
   WHERE id = '00000000-0000-4000-8000-000000000301'
 ), true, 'canonical is_active is stored');
 
+INSERT INTO public.listings (
+  id, broker_id, title, property_type, is_active, privacy_level
+)
+VALUES
+  (
+    '00000000-0000-4000-8000-000000000311',
+    '00000000-0000-4000-8000-000000000201',
+    'Active Public Visibility Listing', 'Apartment', true, 'public'
+  ),
+  (
+    '00000000-0000-4000-8000-000000000312',
+    '00000000-0000-4000-8000-000000000201',
+    'Active Private Visibility Listing', 'Apartment', true, 'private'
+  ),
+  (
+    '00000000-0000-4000-8000-000000000313',
+    '00000000-0000-4000-8000-000000000201',
+    'Inactive Public Visibility Listing', 'Apartment', false, 'public'
+  ),
+  (
+    '00000000-0000-4000-8000-000000000314',
+    '00000000-0000-4000-8000-000000000201',
+    'Inactive Private Visibility Listing', 'Apartment', false, 'private'
+  ),
+  (
+    '00000000-0000-4000-8000-000000000315',
+    '00000000-0000-4000-8000-000000000201',
+    'Active Legacy Null Visibility Listing', 'Apartment', true, NULL
+  );
+
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000201';
+
+SELECT extensions.is((
+  SELECT pg_catalog.count(*) FROM public.listings
+  WHERE id = '00000000-0000-4000-8000-000000000311'
+), 1::bigint, 'owner can select their active public listing');
+
+SELECT extensions.is((
+  SELECT pg_catalog.count(*) FROM public.listings
+  WHERE id = '00000000-0000-4000-8000-000000000312'
+), 1::bigint, 'owner can select their active private listing');
+
+SELECT extensions.is((
+  SELECT pg_catalog.count(*) FROM public.listings
+  WHERE id = '00000000-0000-4000-8000-000000000313'
+), 1::bigint, 'owner can select their inactive public listing');
+
+SELECT extensions.is((
+  SELECT pg_catalog.count(*) FROM public.listings
+  WHERE id = '00000000-0000-4000-8000-000000000314'
+), 1::bigint, 'owner can select their inactive private listing');
+
+RESET ROLE;
+
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000202';
+
+SELECT extensions.is((
+  SELECT pg_catalog.count(*) FROM public.listings
+  WHERE id = '00000000-0000-4000-8000-000000000311'
+), 1::bigint, 'another authenticated user can select an active public listing');
+
+SELECT extensions.is((
+  SELECT pg_catalog.count(*) FROM public.listings
+  WHERE id = '00000000-0000-4000-8000-000000000315'
+), 1::bigint, 'another authenticated user can select an active legacy null-privacy listing');
+
+SELECT extensions.is((
+  SELECT pg_catalog.count(*) FROM public.listings
+  WHERE id = '00000000-0000-4000-8000-000000000312'
+), 0::bigint, 'another authenticated user cannot select an active private listing');
+
+SELECT extensions.is((
+  SELECT pg_catalog.count(*) FROM public.listings
+  WHERE id = '00000000-0000-4000-8000-000000000313'
+), 0::bigint, 'another authenticated user cannot select an inactive public listing');
+
+SELECT extensions.is((
+  SELECT pg_catalog.count(*) FROM public.listings
+  WHERE id = '00000000-0000-4000-8000-000000000314'
+), 0::bigint, 'another authenticated user cannot select an inactive private listing');
+
+RESET ROLE;
+
 SET LOCAL ROLE authenticated;
 SET LOCAL "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000202';
 
@@ -255,6 +422,37 @@ SELECT extensions.is((
   SELECT pg_catalog.count(*) FROM public.listings
   WHERE id = '00000000-0000-4000-8000-000000000301'
 ), 1::bigint, 'another user cannot delete the listing');
+
+CREATE POLICY "test unexpected permissive listings policy"
+  ON public.listings FOR SELECT
+  TO authenticated
+  USING (true);
+
+SELECT public.normalize_listings_policies();
+
+SELECT extensions.ok(
+  NOT EXISTS (
+    SELECT 1
+    FROM pg_catalog.pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'listings'
+      AND policyname = 'test unexpected permissive listings policy'
+  ),
+  'convergence rerun removes an arbitrarily named permissive listings policy'
+);
+
+SELECT extensions.is(
+  (
+    SELECT pg_catalog.string_agg(
+      policyname || ':' || cmd,
+      ',' ORDER BY policyname
+    )
+    FROM pg_catalog.pg_policies
+    WHERE schemaname = 'public' AND tablename = 'listings'
+  ),
+  'listings_delete_own:DELETE,listings_insert_own:INSERT,listings_select_authenticated:SELECT,listings_update_own:UPDATE',
+  'convergence rerun leaves exactly the four canonical listings policies'
+);
 
 DELETE FROM auth.users
 WHERE id = '00000000-0000-4000-8000-000000000201';

@@ -2,7 +2,7 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 
-SELECT extensions.plan(20);
+SELECT extensions.plan(40);
 
 SELECT extensions.ok(EXISTS (
   SELECT 1 FROM storage.buckets WHERE id = 'avatars'
@@ -72,6 +72,54 @@ SELECT extensions.ok(NOT EXISTS (
     AND policyname = 'Anyone can upload a listing image.'
 ), 'legacy broad listing-image upload policy is absent');
 
+SELECT extensions.ok(NOT EXISTS (
+  SELECT 1 FROM pg_catalog.pg_policies
+  WHERE schemaname = 'storage' AND tablename = 'objects'
+    AND policyname = 'KYC all access'
+), 'legacy KYC all-access policy is absent');
+
+SELECT extensions.ok(NOT EXISTS (
+  SELECT 1 FROM pg_catalog.pg_policies
+  WHERE schemaname = 'storage' AND tablename = 'objects'
+    AND policyname = 'Avatar all access'
+), 'legacy avatar all-access policy is absent');
+
+SELECT extensions.ok(NOT EXISTS (
+  SELECT 1 FROM pg_catalog.pg_policies
+  WHERE schemaname = 'storage' AND tablename = 'objects'
+    AND policyname = 'Cover all access'
+), 'legacy cover all-access policy is absent');
+
+SELECT extensions.ok(NOT EXISTS (
+  SELECT 1 FROM pg_catalog.pg_policies
+  WHERE schemaname = 'storage' AND tablename = 'objects'
+    AND policyname = 'Avatar public select'
+), 'legacy avatar public-select policy is absent');
+
+SELECT extensions.ok(NOT EXISTS (
+  SELECT 1 FROM pg_catalog.pg_policies
+  WHERE schemaname = 'storage' AND tablename = 'objects'
+    AND policyname = 'Cover public select'
+), 'legacy cover public-select policy is absent');
+
+SELECT extensions.ok(NOT EXISTS (
+  SELECT 1 FROM pg_catalog.pg_policies
+  WHERE schemaname = 'storage' AND tablename = 'objects'
+    AND policyname = 'Listing images are publicly accessible.'
+), 'legacy listing-image public-select policy is absent');
+
+SELECT extensions.ok(NOT EXISTS (
+  SELECT 1 FROM pg_catalog.pg_policies
+  WHERE schemaname = 'storage' AND tablename = 'objects'
+    AND policyname = 'Avatar images are publicly accessible.'
+), 'legacy avatar public-image policy is absent');
+
+SELECT extensions.ok(NOT EXISTS (
+  SELECT 1 FROM pg_catalog.pg_policies
+  WHERE schemaname = 'storage' AND tablename = 'objects'
+    AND policyname = 'Cover images are publicly accessible.'
+), 'legacy cover public-image policy is absent');
+
 SELECT extensions.is(
   (
     SELECT pg_catalog.string_agg(policyname, ',' ORDER BY policyname)
@@ -130,13 +178,21 @@ INSERT INTO auth.users (
   id, aud, role, email, raw_app_meta_data, raw_user_meta_data,
   created_at, updated_at
 )
-VALUES (
-  '00000000-0000-4000-8000-000000000501',
-  'authenticated', 'authenticated',
-  'storage-user-501@example.invalid', '{}'::jsonb,
-  '{"full_name":"Storage Test User"}'::jsonb,
-  pg_catalog.now(), pg_catalog.now()
-);
+VALUES
+  (
+    '00000000-0000-4000-8000-000000000501',
+    'authenticated', 'authenticated',
+    'storage-user-a-501@example.invalid', '{}'::jsonb,
+    '{"full_name":"Storage Test User A"}'::jsonb,
+    pg_catalog.now(), pg_catalog.now()
+  ),
+  (
+    '00000000-0000-4000-8000-000000000502',
+    'authenticated', 'authenticated',
+    'storage-user-b-502@example.invalid', '{}'::jsonb,
+    '{"full_name":"Storage Test User B"}'::jsonb,
+    pg_catalog.now(), pg_catalog.now()
+  );
 
 SET LOCAL ROLE authenticated;
 SET LOCAL "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000501';
@@ -165,7 +221,155 @@ SELECT extensions.throws_ok(
   'authenticated user cannot insert into another user folder'
 );
 
+SELECT extensions.lives_ok(
+  $sql$
+    INSERT INTO storage.objects (bucket_id, name)
+    VALUES (
+      'kyc-documents',
+      '00000000-0000-4000-8000-000000000501/identity.pdf'
+    )
+  $sql$,
+  'user A can insert a KYC object in their own folder'
+);
+
+SELECT extensions.throws_ok(
+  $sql$
+    INSERT INTO storage.objects (bucket_id, name)
+    VALUES (
+      'kyc-documents',
+      '00000000-0000-4000-8000-000000000502/not-owned.pdf'
+    )
+  $sql$,
+  '42501',
+  'new row violates row-level security policy for table "objects"',
+  'user A cannot insert a KYC object in user B folder'
+);
+
 RESET ROLE;
+
+-- Supabase Storage rejects direct SQL deletion unless its API-scoped
+-- transaction flag is present. Enable that local-only guard context so the
+-- DELETE assertions exercise RLS rather than the built-in statement trigger.
+SET LOCAL "storage.allow_delete_query" = 'true';
+
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000502';
+
+SELECT extensions.is(
+  (
+    SELECT pg_catalog.count(*)
+    FROM storage.objects
+    WHERE bucket_id = 'kyc-documents'
+      AND name = '00000000-0000-4000-8000-000000000501/identity.pdf'
+  ),
+  0::bigint,
+  'user B cannot select user A KYC object'
+);
+
+SELECT extensions.lives_ok(
+  $sql$
+    UPDATE storage.objects
+       SET metadata = '{"test":"unauthorized"}'::jsonb
+     WHERE bucket_id = 'kyc-documents'
+       AND name = '00000000-0000-4000-8000-000000000501/identity.pdf'
+  $sql$,
+  'user B cross-folder KYC update is safely filtered by RLS'
+);
+
+SELECT extensions.lives_ok(
+  $sql$
+    DELETE FROM storage.objects
+     WHERE bucket_id = 'kyc-documents'
+       AND name = '00000000-0000-4000-8000-000000000501/identity.pdf'
+  $sql$,
+  'user B cross-folder KYC delete is safely filtered by RLS'
+);
+
+RESET ROLE;
+
+SELECT extensions.is(
+  (
+    SELECT metadata ->> 'test'
+    FROM storage.objects
+    WHERE bucket_id = 'kyc-documents'
+      AND name = '00000000-0000-4000-8000-000000000501/identity.pdf'
+  ),
+  NULL::text,
+  'user B cannot change user A KYC object metadata'
+);
+
+SELECT extensions.is(
+  (
+    SELECT pg_catalog.count(*)
+    FROM storage.objects
+    WHERE bucket_id = 'kyc-documents'
+      AND name = '00000000-0000-4000-8000-000000000501/identity.pdf'
+  ),
+  1::bigint,
+  'user B cannot delete user A KYC object'
+);
+
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000501';
+
+SELECT extensions.is(
+  (
+    SELECT pg_catalog.count(*)
+    FROM storage.objects
+    WHERE bucket_id = 'kyc-documents'
+      AND name = '00000000-0000-4000-8000-000000000501/identity.pdf'
+  ),
+  1::bigint,
+  'user A can select their own KYC object'
+);
+
+SELECT extensions.lives_ok(
+  $sql$
+    UPDATE storage.objects
+       SET metadata = '{"test":"owner"}'::jsonb
+     WHERE bucket_id = 'kyc-documents'
+       AND name = '00000000-0000-4000-8000-000000000501/identity.pdf'
+  $sql$,
+  'user A can issue an update for their own KYC object'
+);
+
+RESET ROLE;
+
+SELECT extensions.is(
+  (
+    SELECT metadata ->> 'test'
+    FROM storage.objects
+    WHERE bucket_id = 'kyc-documents'
+      AND name = '00000000-0000-4000-8000-000000000501/identity.pdf'
+  ),
+  'owner',
+  'user A can update their own KYC object'
+);
+
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000501';
+
+SELECT extensions.lives_ok(
+  $sql$
+    DELETE FROM storage.objects
+     WHERE bucket_id = 'kyc-documents'
+       AND name = '00000000-0000-4000-8000-000000000501/identity.pdf'
+  $sql$,
+  'user A can issue a delete for their own KYC object'
+);
+
+RESET ROLE;
+
+SELECT extensions.is(
+  (
+    SELECT pg_catalog.count(*)
+    FROM storage.objects
+    WHERE bucket_id = 'kyc-documents'
+      AND name = '00000000-0000-4000-8000-000000000501/identity.pdf'
+  ),
+  0::bigint,
+  'user A can delete their own KYC object'
+);
 
 SELECT * FROM extensions.finish();
 

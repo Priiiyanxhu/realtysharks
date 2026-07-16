@@ -2,7 +2,7 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 
-SELECT extensions.plan(19);
+SELECT extensions.plan(24);
 
 SELECT extensions.ok(
   pg_catalog.to_regclass('public.profiles') IS NOT NULL,
@@ -52,6 +52,11 @@ SELECT extensions.ok(
 );
 
 SELECT extensions.ok(
+  pg_catalog.to_regprocedure('public.handle_new_user()') IS NOT NULL,
+  'handle_new_user exists'
+);
+
+SELECT extensions.ok(
   (
     SELECT procedure_row.prosecdef
     FROM pg_catalog.pg_proc AS procedure_row
@@ -71,15 +76,16 @@ SELECT extensions.ok(
   'handle_new_user has an empty search_path'
 );
 
-SELECT extensions.ok(
-  EXISTS (
-    SELECT 1
+SELECT extensions.is(
+  (
+    SELECT pg_catalog.count(*)
     FROM pg_catalog.pg_trigger AS trigger_row
     WHERE trigger_row.tgrelid = 'auth.users'::pg_catalog.regclass
       AND trigger_row.tgname = 'on_auth_user_created'
       AND NOT trigger_row.tgisinternal
   ),
-  'on_auth_user_created exists on auth.users'
+  1::bigint,
+  'on_auth_user_created exists exactly once on auth.users'
 );
 
 SELECT extensions.ok(
@@ -102,6 +108,16 @@ SELECT extensions.ok(
       AND relation.relkind = 'v'
   ),
   'profiles_public exists as a view'
+);
+
+SELECT extensions.ok(
+  EXISTS (
+    SELECT 1
+    FROM pg_catalog.pg_class AS relation
+    WHERE relation.oid = 'public.profiles_public'::pg_catalog.regclass
+      AND relation.reloptions @> ARRAY['security_invoker=on']::text[]
+  ),
+  'profiles_public uses security_invoker rights'
 );
 
 SELECT extensions.ok(
@@ -217,6 +233,57 @@ SELECT extensions.is(
   ),
   'Replay Profile Test',
   'signup trigger copies full_name from raw user metadata'
+);
+
+UPDATE public.profiles
+SET auth_id = NULL,
+    full_name = 'Existing Profile Name',
+    agency_name = 'Existing Profile Agency'
+WHERE id = '00000000-0000-4000-8000-000000000101';
+
+CREATE TEMPORARY TABLE simulated_auth_signup (
+  id uuid NOT NULL,
+  raw_user_meta_data jsonb
+);
+
+CREATE TRIGGER simulate_on_auth_user_created
+  AFTER INSERT ON simulated_auth_signup
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+INSERT INTO simulated_auth_signup (id, raw_user_meta_data)
+VALUES (
+  '00000000-0000-4000-8000-000000000101',
+  '{"full_name":"Replacement Metadata Name"}'::jsonb
+);
+
+SELECT extensions.is(
+  (
+    SELECT auth_id::text
+    FROM public.profiles
+    WHERE id = '00000000-0000-4000-8000-000000000101'
+  ),
+  '00000000-0000-4000-8000-000000000101',
+  'signup conflict handling fills a missing auth_id'
+);
+
+SELECT extensions.is(
+  (
+    SELECT full_name
+    FROM public.profiles
+    WHERE id = '00000000-0000-4000-8000-000000000101'
+  ),
+  'Existing Profile Name',
+  'signup conflict handling preserves an existing profile name'
+);
+
+SELECT extensions.is(
+  (
+    SELECT agency_name
+    FROM public.profiles
+    WHERE id = '00000000-0000-4000-8000-000000000101'
+  ),
+  'Existing Profile Agency',
+  'signup conflict handling preserves existing profile business data'
 );
 
 SELECT * FROM extensions.finish();

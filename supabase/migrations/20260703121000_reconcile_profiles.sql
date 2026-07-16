@@ -91,8 +91,8 @@ UPDATE public.profiles
 
 -- ----------------------------------------------------------------------------
 -- 3. Constraints & indexes
---    auth_id must be UNIQUE so listings.broker_id -> profiles(auth_id) is a
---    valid FK target. Guarded so the migration is re-runnable.
+--    auth_id remains the unique auth-user lookup key used by existing app
+--    queries. Guarded so the migration is re-runnable.
 -- ----------------------------------------------------------------------------
 DO $$
 BEGIN
