@@ -13,7 +13,6 @@ export type FilterState = {
   location: string;
   propertyType: string;
   feedType: FeedType;
-  status: string;
   budgetMin: string;
   budgetMax: string;
 };
@@ -117,27 +116,14 @@ export function FilterBar({ filters, onFiltersChange, onClearFilters, isLoading 
               </div>
             </div>
 
-            {filters.feedType !== "requirements" && (
-              <div className="relative">
-                <label className="block text-[10px] uppercase tracking-wider text-white/50 mb-1.5 font-semibold">Status</label>
-                <div className="relative">
-                  <select 
-                    value={filters.status}
-                    onChange={(e) => handleChange("status", e.target.value)}
-                    aria-label="Status"
-                    className="w-full appearance-none bg-white/5 border border-white/10 text-white text-sm rounded-lg px-4 py-2.5 outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]/50 transition-all"
-                  >
-                    <option value="" className="bg-[#0f1419]">Any Status</option>
-                    <option value="active" className="bg-[#0f1419]">Active Listings</option>
-                    <option value="off-market" className="bg-[#0f1419]">Off-Market</option>
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
-                </div>
-              </div>
-            )}
-
             {/* Budget Range */}
-            <div className={`lg:col-span-${filters.feedType === "requirements" ? "2" : "1"}`}>
+            <div
+              className={
+                filters.feedType === "requirements"
+                  ? "lg:col-span-2"
+                  : "lg:col-span-1"
+              }
+            >
               <label className="block text-[10px] uppercase tracking-wider text-white/50 mb-1.5 font-semibold flex items-center justify-between">
                 <span>Budget Range (INR)</span>
                 {isLoading && <span className="text-[#D4AF37] text-[10px] uppercase animate-pulse">Loading...</span>}
