@@ -106,4 +106,23 @@ BEGIN
   END IF;
 END$$;
 
+-- Keep the auth signup trigger aligned with the reconciled ownership key.
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+BEGIN
+  INSERT INTO public.profiles (id, auth_id, full_name)
+  VALUES (
+    NEW.id,
+    NEW.id,
+    NEW.raw_user_meta_data ->> 'full_name'
+  );
+
+  RETURN NEW;
+END;
+$$;
+
 CREATE INDEX IF NOT EXISTS profiles_auth_id_idx ON public.profiles (auth_id);
