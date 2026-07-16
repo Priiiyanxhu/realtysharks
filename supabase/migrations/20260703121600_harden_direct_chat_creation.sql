@@ -111,16 +111,3 @@ GRANT EXECUTE ON FUNCTION public.get_or_create_direct_conversation(uuid) TO auth
 ALTER FUNCTION public.is_conversation_participant(uuid) SET search_path = '';
 REVOKE ALL ON FUNCTION public.is_conversation_participant(uuid) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.is_conversation_participant(uuid) TO authenticated;
-
--- Direct creation is no longer a supported client operation. Drop every known
--- historical INSERT policy name and revoke the underlying table privilege.
-DROP POLICY IF EXISTS "Users can insert participants to conversations" ON public.conversation_participants;
-DROP POLICY IF EXISTS "cp_insert" ON public.conversation_participants;
-DROP POLICY IF EXISTS "cp_insert_self_or_creator" ON public.conversation_participants;
-DROP POLICY IF EXISTS "cp_insert_creator_only" ON public.conversation_participants;
-
-DROP POLICY IF EXISTS "Authenticated users can create conversations" ON public.conversations;
-DROP POLICY IF EXISTS "conversations_insert_own" ON public.conversations;
-
-REVOKE INSERT ON TABLE public.conversations FROM authenticated, anon;
-REVOKE INSERT ON TABLE public.conversation_participants FROM authenticated, anon;
