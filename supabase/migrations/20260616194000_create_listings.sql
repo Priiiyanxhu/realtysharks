@@ -1,7 +1,7 @@
 -- Create the listings table
 CREATE TABLE IF NOT EXISTS public.listings (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-  broker_id uuid REFERENCES public.profiles(auth_id) ON DELETE CASCADE NOT NULL,
+  broker_id uuid NOT NULL,
   title text NOT NULL,
   price numeric NOT NULL,
   location text NOT NULL,
