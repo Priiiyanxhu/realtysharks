@@ -10,6 +10,7 @@ import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { SearchX, RefreshCcw } from "lucide-react";
 
 type EmbeddedProfile = {
+  id: string;
   full_name: string | null;
   agency_name: string | null;
   avatar_url: string | null;
@@ -121,7 +122,7 @@ export default function GlobalListingsPage() {
               images,
               is_active,
               created_at,
-              profiles!listings_broker_id_fkey (full_name, agency_name, avatar_url)
+              profiles!listings_broker_id_fkey (id, full_name, agency_name, avatar_url)
             `)
             .eq("is_active", true)
             .order('created_at', { ascending: false })
@@ -331,7 +332,7 @@ export default function GlobalListingsPage() {
                     bhk={property.configuration || "Configuration not specified"}
                     imageUrl={property.images?.[0] || ""}
                     agent={{
-                      id: property.broker_id,
+                      id: profile?.id,
                       name: profile?.full_name || "Unknown Broker",
                       company: profile?.agency_name || "Independent",
                       avatarUrl: profile?.avatar_url || undefined
