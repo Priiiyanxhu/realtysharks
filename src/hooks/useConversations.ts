@@ -44,9 +44,20 @@ export function useConversations(userId: string | null, allMessages: Message[], 
         .neq('user_id', userId);
 
       if (allParts) {
+        const partnersByConversation: Record<string, string[]> = {};
+        allParts.forEach((participant) => {
+          const partners = partnersByConversation[participant.conversation_id] || [];
+          partners.push(participant.user_id);
+          partnersByConversation[participant.conversation_id] = partners;
+        });
+
         const partnersMap: Record<string, string> = {};
-        allParts.forEach(p => {
-          partnersMap[p.conversation_id] = p.user_id;
+        Object.entries(partnersByConversation).forEach(([conversationId, partnerIds]) => {
+          // Realtysharks supports direct chat only. Do not represent anomalous
+          // conversations with multiple other participants as one-to-one chats.
+          if (partnerIds.length === 1) {
+            partnersMap[conversationId] = partnerIds[0];
+          }
         });
         setConversationPartners(partnersMap);
       }
@@ -164,28 +175,25 @@ export function useConversations(userId: string | null, allMessages: Message[], 
     return inbox;
   }, [allMessages, conversationPartners, profiles, activeChat, userId, urlBrokerId]);
 
-  const getOrCreateConversation = useCallback(async (partnerId: string, currentUserId: string): Promise<string | null> => {
-    // Attempt to find existing
-    const existingConvId = Object.keys(conversationPartners).find(key => conversationPartners[key] === partnerId);
-    if (existingConvId) return existingConvId;
+  const getOrCreateConversation = useCallback(async (partnerId: string): Promise<string | null> => {
+    const { data: conversationId, error } = await supabase.rpc(
+      'get_or_create_direct_conversation',
+      { p_partner_id: partnerId }
+    );
 
-    // Create new
-    const { data: convData, error: convErr } = await supabase
-      .from('conversations')
-      .insert({ created_by: currentUserId })
-      .select()
-      .single();
-      
-    if (convErr || !convData) return null;
-    
-    await supabase.from('conversation_participants').insert([
-      { conversation_id: convData.id, user_id: currentUserId },
-      { conversation_id: convData.id, user_id: partnerId }
-    ]);
+    if (error) {
+      console.error('Failed to get or create direct conversation.', { code: error.code });
+      return null;
+    }
 
-    setConversationPartners(prev => ({ ...prev, [convData.id]: partnerId }));
-    return convData.id;
-  }, [conversationPartners]);
+    if (typeof conversationId !== 'string') {
+      console.error('Direct conversation RPC returned an invalid response.');
+      return null;
+    }
+
+    setConversationPartners(prev => ({ ...prev, [conversationId]: partnerId }));
+    return conversationId;
+  }, []);
 
   return { conversations, conversationPartners, getOrCreateConversation };
 }

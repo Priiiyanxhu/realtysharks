@@ -100,7 +100,7 @@ function MessagingEngine() {
     let targetConvId = activeChat;
     
     if (activeChat.startsWith('new-')) {
-      const newConvId = await getOrCreateConversation(activeConversation.partnerId, userId);
+      const newConvId = await getOrCreateConversation(activeConversation.partnerId);
       if (!newConvId) {
         alert("Failed to create conversation");
         return;
