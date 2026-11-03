@@ -47,7 +47,7 @@ export default function PublicBrokerProfile() {
 
         // Fetch Active Requirements
         const { data: reqData } = await supabase
-          .from('requirements')
+          .from('requirements_feed')
           .select('*')
           .eq('broker_id', brokerId)
           .eq('is_active', true)

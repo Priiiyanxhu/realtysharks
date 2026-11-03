@@ -13,7 +13,7 @@ SELECT extensions.is(
     FROM pg_catalog.pg_policies
     WHERE schemaname = 'public' AND tablename = 'requirements'
   ),
-  'requirements_delete_own,requirements_insert_own,requirements_select_authenticated,requirements_update_own',
+  'requirements_delete_own,requirements_insert_own,requirements_select_own,requirements_update_own',
   'requirements has exactly its four canonical policies'
 );
 
@@ -125,8 +125,8 @@ SET LOCAL "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000511';
 SELECT extensions.is(
   (SELECT pg_catalog.string_agg(id::text, ',' ORDER BY id)
      FROM public.requirements),
-  '00000000-0000-4000-8000-000000000521,00000000-0000-4000-8000-000000000523',
-  'Alice sees active requirements from others plus her own inactive one, but not others'' inactive ones'
+  '00000000-0000-4000-8000-000000000523',
+  'Alice reads only her own requirements (active or not) from the base table; others are read via requirements_feed'
 );
 
 SELECT extensions.lives_ok(

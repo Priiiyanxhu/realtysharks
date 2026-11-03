@@ -59,7 +59,7 @@ export function NetworkFeed() {
           .limit(5);
 
         const { data: recentReqs } = await supabase
-          .from('requirements')
+          .from('requirements_feed')
           .select('id, property_type, budget_min_inr, budget_max_inr, city, created_at, profiles(full_name)')
           .order('created_at', { ascending: false })
           .limit(5);

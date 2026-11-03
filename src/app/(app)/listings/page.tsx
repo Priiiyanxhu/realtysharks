@@ -166,7 +166,7 @@ export default function GlobalListingsPage() {
 
         const fetchRequirements = async () => {
           let query = supabase
-            .from('requirements')
+            .from('requirements_feed')
             .select(`
               id,
               broker_id,
