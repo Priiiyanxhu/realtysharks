@@ -28,6 +28,7 @@ Security hardening before closed beta.
 - Chat RLS, RPC-only conversation creation, onboarding gate, daily cap, blocks, mapped chat error messages
 - Per-conversation realtime subscriptions; GlobalNotification stubbed on purpose
 - Orphaned avatar detection + cleanup script; old avatar deleted on upload
+- CI workflow (typecheck, lint ratchet, unit tests, build, migration replay + pgTAP)
 - MarketSphere viewport and reduced-motion optimization
 
 ## Current priorities
@@ -39,7 +40,7 @@ Security hardening before closed beta.
 5. Admin KYC review (server-side, service_role) so brokers can become verified
 6. Confirm the live requirements foreign key matches the code (see CLAUDE.md, "Known gaps")
 7. Real search and filters (listings feed is wired; verify the rest)
-8. CI running tsc, lint, build and the pgTAP suites; reduce lint debt
+8. Confirm the CI database job is green on GitHub, require "CI passed" in branch protection, and reduce lint debt (lower .github/lint-baseline.json as it falls)
 9. Closed-beta workflow testing
 
 ## Security rules

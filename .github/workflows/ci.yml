@@ -1,0 +1,114 @@
+name: CI
+
+# Runs on every pull request and on pushes to main. No repository secrets are
+# used or needed: the build gets placeholder Supabase values, and the database
+# job runs against a throwaway local Supabase stack inside the runner.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  # A newer push to the same PR supersedes the older run; never cancel main.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  app:
+    name: App (typecheck, lint, unit tests, build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+      # Placeholders so `next build` can run. Not secrets, never real values.
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-not-a-secret
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # `npm test` runs TypeScript natively and needs Node >= 22.6.
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      # Existing lint debt means a clean run isn't possible yet, so this fails
+      # only if errors or warnings RISE above .github/lint-baseline.json.
+      # `|| true` is safe: the ratchet fails on a missing report or any fatal
+      # ESLint error, so a crashed linter can't pass.
+      - name: Lint (ratchet against baseline)
+        run: |
+          npx eslint . --format json --output-file eslint-report.json || true
+          node scripts/lint-ratchet.mjs eslint-report.json
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+  database:
+    name: Database (migrations replay + pgTAP)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      DO_NOT_TRACK: "1" # Supabase CLI telemetry off
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # Installs the Supabase CLI version pinned in package.json.
+      - name: Install dependencies
+        run: npm ci
+
+      # Applies every migration in supabase/migrations to a fresh Postgres, so
+      # a migration that doesn't replay from empty fails here. Auth (gotrue)
+      # and Storage (storage-api) must keep running because the schema tests
+      # need the auth and storage schemas; the dashboard, functions, email,
+      # image transforms, metadata and analytics services are skipped.
+      - name: Start local Supabase and replay migrations
+        run: npx supabase start -x edge-runtime,imgproxy,logflare,mailpit,postgres-meta,studio,supavisor,vector
+
+      - name: Run pgTAP suites
+        run: npx supabase test db supabase/tests/database
+
+      - name: Diagnostics on failure
+        if: failure()
+        run: |
+          npx supabase status || true
+          docker ps -a || true
+
+      - name: Stop local Supabase
+        if: always()
+        run: npx supabase stop --no-backup || true
+
+  # One stable check name for branch protection: require "CI passed" instead
+  # of listing each job. Fails if any job failed or was cancelled.
+  ci-passed:
+    name: CI passed
+    if: always()
+    needs: [app, database]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify all jobs succeeded
+        env:
+          APP_RESULT: ${{ needs.app.result }}
+          DATABASE_RESULT: ${{ needs.database.result }}
+        run: |
+          echo "app=$APP_RESULT database=$DATABASE_RESULT"
+          [ "$APP_RESULT" = "success" ] && [ "$DATABASE_RESULT" = "success" ]
