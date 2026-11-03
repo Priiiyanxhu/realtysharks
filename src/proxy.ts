@@ -32,13 +32,16 @@ export async function proxy(req: NextRequest) {
     }
   );
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  // getClaims() verifies the JWT signature. getSession() only decodes the
+  // cookie, so a hand-forged cookie would otherwise be treated as logged in.
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const session = claimsData?.claims?.sub ? claimsData.claims : null;
 
   const pathname = req.nextUrl.pathname;
 
-  const publicRoutes = ['/', '/login', '/register', '/forgot-password', '/reset-password'];
+  // /update-password is intentionally NOT public: /auth/callback exchanges the
+  // recovery code for a session first, so the user arrives authenticated.
+  const publicRoutes = ['/', '/login', '/register', '/forgot-password'];
   const isPublicRoute = publicRoutes.includes(pathname) || pathname.startsWith('/auth/callback');
   const isAuthPage = pathname.startsWith("/login") || pathname.startsWith("/register");
 

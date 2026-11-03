@@ -1,9 +1,31 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
+import { getVerifiedUserId } from '@/utils/supabase/server';
+
+const MAX_PROMPT_LENGTH = 4000;
 
 export async function POST(req: Request) {
+  // Defense in depth: don't rely on src/proxy.ts alone to gate paid API usage.
+  const userId = await getVerifiedUserId();
+  if (!userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  let prompt: unknown;
   try {
-    const { prompt } = await req.json();
+    ({ prompt } = await req.json());
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+  }
+
+  if (typeof prompt !== 'string' || prompt.trim().length === 0) {
+    return NextResponse.json({ error: 'A prompt is required' }, { status: 400 });
+  }
+  if (prompt.length > MAX_PROMPT_LENGTH) {
+    return NextResponse.json({ error: 'Prompt is too long' }, { status: 413 });
+  }
+
+  try {
 
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
     

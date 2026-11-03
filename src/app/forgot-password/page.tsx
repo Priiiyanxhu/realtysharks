@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
 import { DataInput } from "@/components/ui/DataInput";
 import { PremiumButton } from "@/components/ui/PremiumButton";
@@ -9,8 +9,13 @@ import Link from "next/link";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { MailCheck, ArrowLeft } from "lucide-react";
 
-export default function ForgotPasswordPage() {
+function ForgotPasswordForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const linkError =
+    searchParams.get("error") === "invalid_link"
+      ? "That recovery link is invalid or has expired. Please request a new one."
+      : null;
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,8 +27,9 @@ export default function ForgotPasswordPage() {
     setError(null);
 
     try {
-      // Create the exact URL for the update-password page on the current origin
-      const redirectUrl = `${window.location.origin}/update-password`;
+      // The recovery link lands on /auth/callback, which exchanges the code for
+      // a session cookie and then forwards to /update-password.
+      const redirectUrl = `${window.location.origin}/auth/callback?next=/update-password`;
 
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: redirectUrl,
@@ -56,9 +62,9 @@ export default function ForgotPasswordPage() {
           <p className="text-gray-400 text-sm">We&apos;ll send you a secure recovery link.</p>
         </div>
 
-        {error && (
+        {(error ?? linkError) && (
           <div className="mb-6 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm text-center animate-in fade-in slide-in-from-top-2">
-            {error}
+            {error ?? linkError}
           </div>
         )}
 
@@ -70,7 +76,7 @@ export default function ForgotPasswordPage() {
             <div>
               <h2 className="text-xl font-semibold text-white mb-2">Check your inbox</h2>
               <p className="text-gray-400 text-sm">
-                We've sent a secure recovery link to <strong>{email}</strong>. 
+                We&apos;ve sent a secure recovery link to <strong>{email}</strong>. 
                 Please click the link in the email to set a new password.
               </p>
             </div>
@@ -98,5 +104,13 @@ export default function ForgotPasswordPage() {
         )}
       </GlassCard>
     </div>
+  );
+}
+
+export default function ForgotPasswordPage() {
+  return (
+    <Suspense fallback={null}>
+      <ForgotPasswordForm />
+    </Suspense>
   );
 }
