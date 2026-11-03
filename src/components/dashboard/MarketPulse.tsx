@@ -103,8 +103,10 @@ export function MarketPulse() {
         </div>
       </div>
 
-      {/* Interactive Globe Canvas Container - Pointer events disabled on mobile to prevent scroll hijack */}
-      <div className="absolute right-[-20%] top-1/2 -translate-y-1/2 w-[600px] h-[600px] pointer-events-none md:pointer-events-auto mix-blend-screen overflow-hidden">
+      {/* Interactive Globe Canvas Container - Pointer events disabled on mobile to prevent scroll hijack.
+          Its right edge sits 20% past the card, so it must be at least 120% of the card wide to reach the
+          card's left edge (w-[120%]); min-w keeps the original 600px on narrow cards. */}
+      <div className="absolute right-[-20%] top-1/2 -translate-y-1/2 w-[120%] min-w-[600px] h-[600px] pointer-events-none md:pointer-events-auto mix-blend-screen overflow-hidden">
         <MarketSphere />
       </div>
     </div>

@@ -89,10 +89,11 @@ export default function CommandCenterDashboard() {
         </div>
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* xl, not lg: from md the sidebar takes 288px, so at 1024px the third column is only ~200px wide and clips the Sphere and Network Feed text */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
           
           {/* Left Column: AI Matches (66%) */}
-          <div className="lg:col-span-2 flex flex-col min-w-0">
+          <div className="xl:col-span-2 flex flex-col min-w-0">
             <AiMatchesGrid />
           </div>
 
