@@ -68,7 +68,8 @@ export function ChatArea({
             agentName={activeConversation.name}
             agentCompany={activeConversation.company}
             agentAvatar={activeConversation.avatar || undefined}
-            propertyTitle={taggedListing?.title} 
+            propertyTitle={taggedListing?.title}
+            propertyId={taggedListing?.id}
             isBlocked={isPartnerBlocked}
             blockPending={blockPending}
             onBlock={onRequestBlock}
@@ -105,17 +106,17 @@ export function ChatArea({
           
           <div className="bg-[#0A0D12] border-t border-white/10">
             {taggedListing && (
-              <div className="px-4 py-3 bg-[#D4AF37]/5 border-b border-white/5 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-[#D4AF37]/20 rounded-md flex items-center justify-center border border-[#D4AF37]/30">
+              <div className="px-4 py-3 bg-[#D4AF37]/5 border-b border-white/5 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 shrink-0 bg-[#D4AF37]/20 rounded-md flex items-center justify-center border border-[#D4AF37]/30">
                     <Building className="w-4 h-4 text-[#D4AF37]" />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-xs font-bold text-[#D4AF37] uppercase tracking-widest mb-0.5">Tagging Property</p>
-                    <p className="text-sm font-medium text-white leading-none">{taggedListing.title} <span className="text-gray-500 font-normal ml-2">₹ {taggedListing.price}</span></p>
+                    <p className="text-sm font-medium text-white leading-none [overflow-wrap:anywhere]">{taggedListing.title} <span className="text-gray-500 font-normal ml-2">₹ {taggedListing.price}</span></p>
                   </div>
                 </div>
-                <button onClick={onClearTaggedListing} className="text-xs text-gray-400 hover:text-white underline">
+                <button onClick={onClearTaggedListing} className="shrink-0 text-xs text-gray-400 hover:text-white underline">
                   Remove Tag
                 </button>
               </div>

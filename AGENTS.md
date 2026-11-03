@@ -33,6 +33,7 @@ Security hardening before closed beta.
 - CI workflow (typecheck, lint ratchet, unit tests, build, migration replay + pgTAP)
 - MarketSphere viewport and reduced-motion optimization
 - Chat header menu: View Profile, Report User (`report_user` RPC, private, deduped and capped) and Clear Chat (per-user hide) are real; placeholders removed
+- Chat header "View Listing" bar is a real link (id validated); tagged-listing titles can no longer push chat controls off-screen on phones
 
 ## Current priorities
 

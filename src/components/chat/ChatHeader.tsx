@@ -2,7 +2,9 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { MoreVertical, Building, User, Flag, Trash2, Ban, UserCheck } from "lucide-react";
+import { listingHref } from "@/utils/listingLink";
 
 export function ChatHeader({ 
   agentName, 
@@ -36,6 +38,7 @@ export function ChatHeader({
   canClearChat?: boolean,
 }) {
   const [showMenu, setShowMenu] = useState(false);
+  const listingLink = listingHref(propertyId);
   const menuRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
@@ -147,12 +150,20 @@ export function ChatHeader({
           )}
         </div>
       </div>
-      {propertyTitle && (
-        <div className="mt-4 px-3 py-2 bg-white/5 rounded-xl border border-white/10 text-sm flex items-center justify-between cursor-pointer hover:bg-white/10 transition-colors">
-          <span className="text-gray-300">Discussing: <strong className="text-white">{propertyTitle}</strong></span>
-          <span className="text-[#D4AF37] font-medium text-xs uppercase tracking-wider">View Listing &rarr;</span>
+      {propertyTitle && (listingLink ? (
+        <Link
+          href={listingLink}
+          className="mt-4 px-3 py-2 bg-white/5 rounded-xl border border-white/10 text-sm flex items-center justify-between gap-3 hover:bg-white/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37]/60"
+        >
+          <span className="text-gray-300 min-w-0 line-clamp-1 [overflow-wrap:anywhere]">Discussing: <strong className="text-white">{propertyTitle}</strong></span>
+          <span className="shrink-0 text-[#D4AF37] font-medium text-xs uppercase tracking-wider">View Listing &rarr;</span>
+        </Link>
+      ) : (
+        // No valid listing id (e.g. a hand-edited URL): show the context, offer no link.
+        <div className="mt-4 px-3 py-2 bg-white/5 rounded-xl border border-white/10 text-sm">
+          <span className="text-gray-300 block line-clamp-1 [overflow-wrap:anywhere]">Discussing: <strong className="text-white">{propertyTitle}</strong></span>
         </div>
-      )}
+      ))}
     </div>
   );
 }
