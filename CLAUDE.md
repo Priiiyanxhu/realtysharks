@@ -40,14 +40,14 @@ Mobile-first B2B real-estate network for Indian brokers, channel partners, devel
 
 ## UI direction
 
-Institutional, understated, trustworthy: Midnight Slate + Champagne Gold (tokens in `globals.css`), dark by default, glass only where it aids clarity. Mobile-first with safe-area insets. Build loading/empty/error states with the Skeleton components, and surface failures as toasts.
+Institutional, understated, trustworthy: Midnight Slate + Champagne Gold (tokens in `globals.css`), dark by default, glass only where it aids clarity. Mobile-first with safe-area insets. Clip horizontal overflow with `overflow-x-clip`, not `overflow-x-hidden`: `hidden` on a wrapper makes it a scroll container and silently breaks `position: sticky`. The root layout clips decorative overhang this way, so pages cannot scroll sideways. Build loading/empty/error states with the Skeleton components, and surface failures as toasts.
 
 ## Known gaps
 
 - `requirements.broker_id` references `auth.users` in migrations, yet the code embeds `profiles!requirements_broker_id_fkey`. Confirm the live FK before touching either. The same embeds through `requirements_feed` are unverified against PostgREST.
 - `MarketSphere` reads the legacy `listings.location` column that new listings never fill, so the globe shows demo data.
 - Chat header menu items View Profile, Report User and Clear Chat are placeholder `alert()`s (Block/Unblock is real).
-- `src/app/layout.tsx` ambient glow (`right-[-10%]`) makes every page ~128px wider than the viewport, so pages scroll sideways; clip it with `overflow-x-clip` on the body or the glow's container.
+- `src/components/layout/GlobalLayout.tsx:69` has `overflow-x-hidden` on the app shell, which makes it a scroll container, so `position: sticky` there never sticks (the Listings `FilterBar` scrolls away). The root layout already clips horizontally, so switching that class to `overflow-x-clip` should be safe; check the visual result before shipping, since the bar would start floating.
 - Profile page: a failed avatar/cover upload is silent, and 9 `alert()` calls remain.
 - `src/utils/supabase/client.ts` logs debug lines; no `capacitor.config` is committed (native builds are not reproducible); `fix_blue.py`/`fix_emerald.py` are one-off scripts.
 

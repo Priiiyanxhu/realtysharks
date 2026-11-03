@@ -27,15 +27,27 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} h-full antialiased dark`}>
       <body className="min-h-full flex flex-col bg-[#0F1419] text-[#F3F4F6] relative select-none">
-        {/* Specular Liquid Glass Ambient Background Highlights */}
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#D4AF37]/5 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#FACC15]/5 rounded-full blur-[120px] pointer-events-none" />
-        
-        {/* Grain Overlay */}
-        <div className="grain-overlay" />
-        
-        {/* Main Content */}
-        <main className="flex-grow z-10">{children}</main>
+        {/*
+          Root clip. The ambient glows below deliberately hang past the edges
+          (and some pages have their own decoration that does too). Without
+          clipping, that overhang is scrollable overflow: the page is wider
+          than the viewport and focus, scrollIntoView or an anchor jump can
+          shift it sideways. `overflow-x: clip` removes the overflow entirely;
+          unlike `hidden` it creates no scroll container, so `position: sticky`
+          descendants keep working. body's overflow-x: hidden (globals.css)
+          stays as the fallback for browsers without `clip` (Safari < 16).
+        */}
+        <div className="relative flex flex-1 flex-col overflow-x-clip">
+          {/* Specular Liquid Glass Ambient Background Highlights */}
+          <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#D4AF37]/5 rounded-full blur-[120px] pointer-events-none" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#FACC15]/5 rounded-full blur-[120px] pointer-events-none" />
+
+          {/* Grain Overlay */}
+          <div className="grain-overlay" />
+
+          {/* Main Content */}
+          <main className="flex-grow z-10">{children}</main>
+        </div>
       </body>
     </html>
   );
