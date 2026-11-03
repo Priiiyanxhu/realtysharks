@@ -42,12 +42,16 @@ Mobile-first B2B real-estate network for Indian brokers, channel partners, devel
 
 Institutional, understated, trustworthy: Midnight Slate + Champagne Gold (tokens in `globals.css`), dark by default, glass only where it aids clarity. Mobile-first with safe-area insets. Clip horizontal overflow with `overflow-x-clip`, not `overflow-x-hidden`: `hidden` on a wrapper makes it a scroll container and silently breaks `position: sticky`. The root layout and `GlobalLayout` clip this way, so pages cannot scroll sideways and sticky bars (Listings filter bar, listing-detail contact card) stick. Build loading/empty/error states with the Skeleton components, and surface failures as toasts.
 
+**Fixed elements.** The desktop sidebar, the phone tab bar and overlays are `position: fixed`. Never put a `transform`, `filter`, `backdrop-filter`, `perspective` or `contain` on an ancestor of one: that ancestor becomes the containing block and the element stops being fixed (it scrolls with the page, and a phone tab bar ends up off-screen on tall pages). `src/app/template.tsx` wraps the whole shell, so it animates opacity only. Animate rise or blur inside GlobalLayout's `<main>` instead.
+
+**Phone tab bar.** It covers the bottom 100px plus the safe area, and `GlobalLayout`'s `<main>` reserves that space. A full-height screen must end above it, as Messages does with `h-[calc(100dvh_-_100px_-_env(safe-area-inset-bottom))] md:h-[100dvh]`; otherwise the bar covers the screen's bottom controls (it covered the chat composer).
+
 ## Known gaps
 
 - `requirements.broker_id` references `auth.users` in migrations, yet the code embeds `profiles!requirements_broker_id_fkey`. Confirm the live FK before touching either. The same embeds through `requirements_feed` are unverified against PostgREST.
 - `MarketSphere` reads the legacy `listings.location` column that new listings never fill, so the globe shows demo data.
 - Chat header menu items View Profile, Report User and Clear Chat are placeholder `alert()`s (Block/Unblock is real).
-- **`position: fixed` is not fixed.** `src/app/template.tsx` animates `filter: blur(5px)` to `blur(0px)` and leaves `filter: blur(0px)` on the wrapper, which is not `none`, so that wrapper becomes the containing block for every fixed descendant. Measured: the desktop sidebar (`GlobalLayout`) scrolls away with the page, and on a phone the bottom tab bar sits at the bottom of the whole document, off-screen on any tall page. Likely fix: `transitionEnd: { filter: "none" }` in the `animate` prop. Check the pages after, since the sidebar and tab bar would start staying put.
+- **Blank scroll tail on every page.** The root-layout glows in `src/app/layout.tsx` use `bottom-[-10%]`, so each page scrolls exactly 10% further than its content (80px on a short page, 766px on the phone Listings page). Put the two glows in their own `absolute inset-0 overflow-hidden pointer-events-none` layer. (The horizontal overhang is already clipped by the wrapper's `overflow-x-clip`.)
 - `QuickActionsPanel` (`src/components/dashboard/`) is unused.
 - Profile page: a failed avatar/cover upload is silent, and 9 `alert()` calls remain.
 - `src/utils/supabase/client.ts` logs debug lines; no `capacitor.config` is committed (native builds are not reproducible); `fix_blue.py`/`fix_emerald.py` are one-off scripts.

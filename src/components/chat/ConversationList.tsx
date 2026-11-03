@@ -33,7 +33,7 @@ export function ConversationList({ conversations, activeChat, onSelectChat, isVi
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto scrollbar-hide pb-20 md:pb-0">
+      <div className="flex-1 overflow-y-auto scrollbar-hide ">
         {conversations.length === 0 ? (
           <div className="p-8 text-center text-gray-500 text-sm">
             No conversations yet. Inquire about a listing to start chatting!

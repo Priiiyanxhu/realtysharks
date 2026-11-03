@@ -156,8 +156,11 @@ function MessagingEngine() {
     return true;
   };
 
+  // On phones the fixed tab bar sits over the bottom of the screen and GlobalLayout's
+  // <main> reserves 100px + safe area for it, so this full-height screen ends above it
+  // (otherwise the composer is covered). From md up the tab bar is a sidebar.
   return (
-    <div className="flex w-full h-[100dvh] pt-[calc(env(safe-area-inset-top)+1rem)]">
+    <div className="flex w-full h-[calc(100dvh_-_100px_-_env(safe-area-inset-bottom))] md:h-[100dvh] pt-[calc(env(safe-area-inset-top)+1rem)]">
       <ConversationList 
         conversations={conversations} 
         activeChat={activeChat} 
