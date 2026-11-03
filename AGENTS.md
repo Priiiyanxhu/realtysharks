@@ -35,6 +35,7 @@ Security hardening before closed beta.
 - Chat header menu: View Profile, Report User (`report_user` RPC, private, deduped and capped) and Clear Chat (per-user hide) are real; placeholders removed
 - Chat header "View Listing" bar is a real link (id validated); tagged-listing titles can no longer push chat controls off-screen on phones
 - Chat "Inquiry Context" card in message bubbles is a real link (same id validation); its long values wrap inside the bubble
+- Long or unbroken chat messages (pasted URLs, 200-character strings, long previews) no longer push the header menu, Send button or list time stamps off the screen
 
 ## Current priorities
 

@@ -64,7 +64,7 @@ export function MessageBubble({ content, timestamp, isSent, status = 'sent' }: M
         {taggedListing && <ListingCard listing={taggedListing} href={listingLink} isSent={isSent} />}
 
         {displayContent && (
-          <p className="text-sm leading-relaxed whitespace-pre-wrap">{displayContent}</p>
+          <p className="text-sm leading-relaxed whitespace-pre-wrap [overflow-wrap:anywhere]">{displayContent}</p>
         )}
         
         <div className={cn(
