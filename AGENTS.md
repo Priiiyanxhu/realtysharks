@@ -37,6 +37,7 @@ Security hardening before closed beta.
 - Chat "Inquiry Context" card in message bubbles is a real link (same id validation); its long values wrap inside the bubble
 - Long or unbroken chat messages (pasted URLs, 200-character strings, long previews) no longer push the header menu, Send button or list time stamps off the screen
 - `<main>` has `min-w-0`: no page can be stretched past the screen by long unbreakable content; the `/dashboard`, `/network` and `/network/[id]` tablet overflows are gone (broker profile header now stacks below 1024px)
+- Dashboard stats card wraps: both buttons stay inside the card and clickable from 320 to 1600px (stacked full width on phones and tablets, beside the stats from about 1280px)
 
 ## Current priorities
 

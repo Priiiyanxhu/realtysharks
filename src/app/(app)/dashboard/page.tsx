@@ -53,9 +53,9 @@ export default function CommandCenterDashboard() {
       <div className="max-w-[1600px] mx-auto space-y-8">
         
         {/* Top Header Row: Stats & Actions */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 bg-[#121A2F]/50 backdrop-blur-md border border-white/5 p-6 rounded-2xl">
+        <div className="flex flex-wrap justify-between items-end gap-6 bg-[#121A2F]/50 backdrop-blur-md border border-white/5 p-6 rounded-2xl">
           
-          <div className="flex items-center gap-8 md:gap-12">
+          <div className="flex flex-wrap items-center gap-x-8 gap-y-4 md:gap-x-12">
             <div>
               <p className="text-[10px] text-white/50 tracking-widest font-mono mb-1 uppercase">Active Listings</p>
               <h2 className="text-3xl font-black text-white flex items-end gap-2 leading-none">
@@ -71,16 +71,16 @@ export default function CommandCenterDashboard() {
             </div>
           </div>
 
-          <div className="flex items-center gap-4 w-full md:w-auto">
+          <div className="flex flex-wrap items-center gap-4 w-full md:w-auto">
             <button 
               onClick={() => router.push('/post-requirement')}
-              className="flex-1 md:flex-none px-6 py-3.5 bg-[#0B1120] border border-white/10 hover:border-white/30 text-white font-bold text-xs tracking-wider uppercase rounded-lg transition-all duration-300 hover:shadow-[0_0_20px_rgba(255,255,255,0.05)] transform hover:-translate-y-0.5"
+              className="flex-1 min-w-max px-6 py-3.5 bg-[#0B1120] border border-white/10 hover:border-white/30 text-white font-bold text-xs tracking-wider uppercase rounded-lg transition-all duration-300 hover:shadow-[0_0_20px_rgba(255,255,255,0.05)] transform hover:-translate-y-0.5"
             >
               Post Requirement
             </button>
             <button 
               onClick={() => router.push('/post-listing')}
-              className="flex-1 md:flex-none px-6 py-3.5 bg-gradient-to-r from-[#D4AF37] to-[#FACC15] text-[#0B1120] font-black text-xs tracking-wider uppercase rounded-lg transition-all duration-300 hover:shadow-[0_0_30px_rgba(212,175,55,0.3)] transform hover:-translate-y-0.5"
+              className="flex-1 min-w-max px-6 py-3.5 bg-gradient-to-r from-[#D4AF37] to-[#FACC15] text-[#0B1120] font-black text-xs tracking-wider uppercase rounded-lg transition-all duration-300 hover:shadow-[0_0_30px_rgba(212,175,55,0.3)] transform hover:-translate-y-0.5"
             >
               Post New Listing +
             </button>
