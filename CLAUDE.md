@@ -34,7 +34,9 @@ Mobile-first B2B real-estate network for Indian brokers, channel partners, devel
 ## Commands beyond AGENTS.md
 
 - `npm run lint` is not clean (15 errors, 21 warnings, mostly `no-explicit-any`). Keep the count from rising.
-- There is no JS test runner and no CI.
+- `npm test` runs unit tests (`*.test.ts` beside the code, `scripts/*.test.mjs`) with Node's built-in runner and native TypeScript stripping; it needs Node >= 22.6. Tests import relatively with the `.ts` extension (`@/` aliases do not resolve) and the code under test sticks to erasable TypeScript (no enums, namespaces or parameter properties). Mocks stand in for Supabase, so SQL behaviour is covered only by the pgTAP suites.
+- `chatErrors.test.ts` holds the database's exact error strings; it fails if the app mapper drifts from them, and pgTAP 09 fails if the database drifts.
+- There is no CI.
 
 ## UI direction
 

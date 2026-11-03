@@ -55,6 +55,7 @@ Security hardening before closed beta.
 ## Required checks
 
 - npx tsc --noEmit
+- npm test
 - npm run build
 
 ## Workflow
