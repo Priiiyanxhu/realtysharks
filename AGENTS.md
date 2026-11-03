@@ -18,23 +18,29 @@ Security hardening before closed beta.
 
 ## Completed
 
-- Next.js 16 proxy route protection
-- Storage bucket owner-folder RLS
-- Profiles/listings schema reconciliation
-- Aadhaar, email and phone moved to profiles_private
-- profiles_public safe view
-- Chat RLS migration prepared
+- Next.js 16 proxy route protection (JWT verified with getClaims)
+- Password recovery via /auth/callback
+- Storage owner-folder RLS on every bucket, incl. no anonymous avatars listing
+- Profiles/listings schema reconciliation; migrations replay from empty
+- Aadhaar, email and phone in profiles_private; profiles_public safe view
+- Self-verification blocked (trust-column trigger)
+- Requirements: anon access removed; privacy_level masking via requirements_feed
+- Chat RLS, RPC-only conversation creation, onboarding gate, daily cap, blocks
+- Per-conversation realtime subscriptions; GlobalNotification stubbed on purpose
+- Orphaned avatar detection + cleanup script; old avatar deleted on upload
 - MarketSphere viewport and reduced-motion optimization
 
 ## Current priorities
 
-1. Apply and verify chat RLS
-2. Fix realtime message subscriptions
-3. Fix GlobalNotification schema mismatch
-4. Resolve migration replay/reset ordering
-5. Implement real search and filters
-6. Reduce lint debt
-7. Closed-beta workflow testing
+1. Owner reviews and applies the pending migrations in order (see CLAUDE.md, "Migrations and database tests")
+2. Verify PostgREST embeds through requirements_feed on staging before the owner-only requirements migration
+3. Chat UX: map rejection errors to clear messages; add a block/unblock UI
+4. Per-user rate limit on /api/ai-autowrite
+5. Admin KYC review (server-side, service_role) so brokers can become verified
+6. Confirm the live requirements foreign key matches the code (see CLAUDE.md, "Known gaps")
+7. Real search and filters (listings feed is wired; verify the rest)
+8. CI running tsc, lint, build and the pgTAP suites; reduce lint debt
+9. Closed-beta workflow testing
 
 ## Security rules
 

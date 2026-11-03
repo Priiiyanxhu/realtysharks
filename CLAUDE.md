@@ -1,172 +1,55 @@
 @AGENTS.md
 
-# Realtysharks Claude Project Memory
+# Realtysharks
 
-> Permanent project reference for Claude CLI sessions. Keep this file accurate — update it when architecture, schema, or priorities change. **Note:** `@AGENTS.md` (imported above) warns this is Next.js **16.2.9** with breaking changes from older versions. Read `node_modules/next/dist/docs/` before writing Next.js code.
+Mobile-first B2B real-estate network for Indian brokers, channel partners, developers, consultants and agents: post **listings** and buyer **requirements**, match them, chat directly, trust verified peers. A premium professional network, not a consumer portal. AGENTS.md (imported above) holds the security rules, required checks, workflow, completed work and priorities. This file holds architecture, conventions and gotchas. *Verified against the repo 2026-11-03.*
 
-## 1. Project Summary
+## Architecture
 
-Realtysharks is a **mobile-first B2B real estate networking app** for the Indian brokerage market. It lets real estate professionals post property **listings** and buyer/investor **requirements**, discover and match opportunities, network with verified peers, and chat in real time. It leans on AI (Gemini) to auto-write premium listing copy. The goal is a trusted, invite-worthy professional network — not a consumer property portal.
+- **Supabase is the backend.** The browser queries Postgres directly, so RLS is the access control. Reason about every new query as "what can any logged-in broker do with this?".
+- **Browser client:** `@/utils/supabase/client`. `src/lib/supabase.ts`, `src/lib/gemini.ts` and `@supabase/auth-helpers-nextjs` are unused.
+- **Server identity:** `getVerifiedUserId()` in `src/utils/supabase/server.ts` (`getClaims()` verifies the JWT). Server code treats `getSession()` as untrusted: it only decodes the cookie, and a forged cookie passes it.
+- **Route gate:** `src/proxy.ts` (Next 16 name for middleware). `/api/*` returns 401 and pages redirect to `/login`. `ProtectedRoute`/`GlobalLayout` are client-side extras. `/update-password` stays protected on purpose: `/auth/callback` exchanges the emailed code for a session first.
+- **AI:** `/api/ai-autowrite` (Gemini, server-only key). It verifies the caller and caps prompt size; there is no per-user rate limit yet.
+- **Profiles:** `profiles.id` = `auth.users.id`, and `auth_id` mirrors it (the app queries by `auth_id`). Other brokers' profiles are read from the `profiles_public` view. Email, phone and Aadhaar live in owner-only `profiles_private`.
+- **Requirements:** read other brokers' requirements from `requirements_feed`; read your own from the table, which is owner-only once the rollout step below is applied. Details under "Privacy model".
+- **Chat:** start conversations with the `get_or_create_direct_conversation` RPC (INSERT on `conversations`/`conversation_participants` is revoked) and mark read with `mark_conversation_messages_read`. Messages are sent by direct insert under RLS. Realtime subscribes per conversation. `GlobalNotification` is a deliberate stub (messages have no recipient column to scope a global feed).
+- **Storage:** objects live under `{auth.uid()}/…` in every bucket and RLS enforces that folder. `avatars`, `covers`, `listing-images` are public (images render by URL); `kyc-documents` is private. Avatar/cover uploads go through `src/utils/profileImages.ts`.
 
-The core problem it solves: brokers currently match inventory to buyer demand over fragmented WhatsApp groups and personal contacts. Realtysharks centralizes listings + requirements + trusted profiles + direct chat into one premium workspace.
+## Privacy model (enforced in the database)
 
-## 2. Target Users
+- **Trust columns:** `verified`, `is_verified`, `kyc_status` and `auth_id` on `profiles` are writable only by `service_role`/`postgres` (trigger). Clients may only reset `kyc_status` to `'pending'`. No admin review flow exists, so nobody becomes verified yet; build it server-side with the service-role key.
+- **`requirements.privacy_level`:** `Standard` (or NULL) is fully visible. Anything else is **masked** for non-owners in `requirements_feed`: `funding_status`, `purchase_purpose`, `preferred_localities`, `client_profile`, `details` return NULL. Add any new client-identifying column to the view's mask list.
+- **Chat creation:** both users onboarded (`profiles.onboarded`), no block either way, and 20 new conversations per caller per rolling 24h (constant in the RPC). Blocks (`user_blocks`) also stop new messages in existing chats. Reopening an existing chat is always allowed.
+- **Storage deletes:** remove files through the Storage API. `DELETE FROM storage.objects` leaves the real file in the object store. Orphan cleanup: `scripts/cleanup-orphaned-avatars.mjs` (dry run by default; header documents usage and its service-role requirement).
 
-- **Real estate brokers** — post listings, find matching requirements, close deals with other brokers.
-- **Channel partners** — distribute developer inventory, need reach and matching.
-- **Developers** — surface projects to a broker network.
-- **Consultants** — advisory, need credible profiles and discovery.
-- **Agents** — post/find inventory, network, chat.
+## Migrations and database tests
 
-Shared needs: fast posting, real matching, trustworthy profiles (RERA/KYC/verification), private chat, mobile-first UX.
+- Migrations in `supabase/migrations/` are the source of truth and replay cleanly from empty. Add forward-only migrations and leave applied ones untouched. Each states its rollout notes in its header.
+- **Which migrations production has is the owner's to say.** Treat all as unapplied until told.
+- **Rollout order:** `20261103120300_requirements_base_select_owner_only` ships *after* the frontend that reads `requirements_feed`; before that, feeds show only the viewer's own requirements. It refuses to run if the view is missing.
+- **Tests:** pgTAP in `supabase/tests/database/`, run with `supabase test db` (needs the local Supabase stack). Fixtures that start chats need users with `onboarded = true`. Write each new policy/RPC test so it fails before the migration and passes after.
+- **Hard to see in review:** RLS cannot hide single columns (use a view); a SECURITY DEFINER view is intended for `requirements_feed`; Storage upsert needs the owner SELECT policy as well as INSERT/UPDATE.
 
-## 3. Tech Stack (verified from files)
+## Commands beyond AGENTS.md
 
-- **Next.js 16.2.9** (App Router) — `next.config.ts`, `package.json`.
-- **React 19.2.4 / React DOM 19.2.4**.
-- **TypeScript 5** (`strict: true`, `noEmit`, path alias `@/* -> ./src/*`).
-- **Tailwind CSS v4** — CSS-first config via `@theme` in `src/app/globals.css` (no `tailwind.config.*` file). PostCSS via `@tailwindcss/postcss`.
-- **Supabase**: `@supabase/supabase-js`, `@supabase/ssr`, `@supabase/auth-helpers-nextjs` — Auth, Postgres, Storage, Realtime.
-- **AI**: two Gemini SDKs present — `@google/genai` (used in the live API route) and `@google/generative-ai` (used only in unused `src/lib/gemini.ts`).
-- **3D / motion**: `three`, `@react-three/fiber`, `@react-three/drei`, `@react-three/postprocessing`, `cobe` (globe), `framer-motion`.
-- **Forms/validation**: `react-hook-form`, `@hookform/resolvers`, `zod` v4.
-- **Utilities**: `clsx` + `tailwind-merge` (`cn()` in `src/lib/utils.ts`), `date-fns`, `lucide-react` (icons), `qrcode`, `jspdf` + `html2canvas` (PDF export).
-- **Mobile**: `@capacitor/core|android|ios` v8 — native wrapper. `android/` and `ios/` folders exist; **no `capacitor.config.*` is committed at root** (likely missing or gitignored — verify before a native build). A `out/` static export dir exists from a prior build, but `next.config.ts` does **not** set `output: 'export'`.
+- `npm run lint` is not clean (15 errors, 21 warnings, mostly `no-explicit-any`). Keep the count from rising.
+- There is no JS test runner and no CI.
 
-## 4. Project Structure
+## UI direction
 
-```
-src/
-  app/
-    layout.tsx              # Root layout: dark theme, Inter font, midnight bg, gold ambient glows, grain overlay
-    template.tsx            # Framer Motion page-transition wrapper
-    globals.css             # Tailwind v4 @theme tokens + global mobile CSS
-    page.tsx                # Public landing
-    login/ register/ forgot-password/ update-password/   # Auth pages
-    onboarding/             # Post-signup profile setup (own layout)
-    (app)/                  # Authenticated app group (uses GlobalLayout + GlobalNotification)
-      layout.tsx
-      dashboard/  listings/[id]  network/[id]  messages/
-      post-listing/  post-requirement/  profile/  upgrade/  testbed/
-    api/ai-autowrite/route.ts   # POST -> Gemini (@google/genai, gemini-2.5-flash). Server-only.
-  proxy.ts                  # Next 16 middleware-equivalent (see note below) — server-side route protection
-  components/
-    auth/ProtectedRoute.tsx # Client-side session guard (belt-and-suspenders with proxy.ts)
-    chat/                   # ChatArea, ChatHeader, ChatInput, ConversationList, MessageBubble, GlobalNotification
-    dashboard/              # AiMatchesGrid, MarketPulse, NetworkFeed, QuickActionsPanel
-    layout/GlobalLayout.tsx
-    listings/               # FilterBar, RequirementCard
-    ui/                     # GlassCard, GlassInput, PremiumButton, PropertyCard, MarketSphere(3D), Skeleton(s), etc.
-  hooks/                    # useConversations, useMessages, useDebouncedValue, useDeviceOrientation, useScrollPosition
-  lib/                      # supabase.ts (plain client), gemini.ts (UNUSED), schemas.ts (zod), utils.ts (cn)
-  utils/
-    supabase/client.ts      # createBrowserClient (@supabase/ssr) — the client actually used app-wide
-    formatters.ts  pdfGenerator.ts
-supabase/migrations/        # 6 SQL migrations (source-controlled). See §10.
-android/  ios/              # Capacitor native shells
-fix_blue.py  fix_emerald.py # One-off color-replacement scripts (housekeeping, not app code)
-```
+Institutional, understated, trustworthy: Midnight Slate + Champagne Gold (tokens in `globals.css`), dark by default, glass only where it aids clarity. Mobile-first with safe-area insets. Build loading/empty/error states with the Skeleton components, and surface failures as toasts.
 
-**Two Supabase browser clients exist** — `src/utils/supabase/client.ts` (createBrowserClient, imported by hooks/components) and `src/lib/supabase.ts` (plain createClient). Prefer `@/utils/supabase/client`. `src/utils/supabase/client.ts` currently logs debug lines on import — clean these up.
+## Known gaps
 
-**Route protection = `src/proxy.ts`.** In Next.js 16 the former `middleware.ts` convention is the `proxy` file/function. It runs `getSession()` server-side, redirects unauthenticated users off private routes to `/login`, returns 401 for `/api/*`, and bounces logged-in users away from auth pages. `publicRoutes = ['/', '/login', '/register', '/forgot-password', '/reset-password']`. Verify this proxy is actually being picked up by the running build when auditing auth.
+- `requirements.broker_id` references `auth.users` in migrations, yet the code embeds `profiles!requirements_broker_id_fkey`. Confirm the live FK before touching either. The same embeds through `requirements_feed` are unverified against PostgREST.
+- `MarketSphere` reads the legacy `listings.location` column that new listings never fill, so the globe shows demo data.
+- Chat failures (blocked, not onboarded, daily cap) surface as a generic "Failed to create conversation"; no UI to block a user.
+- Profile page: a failed avatar/cover upload is silent, and 10 `alert()` calls remain.
+- `src/utils/supabase/client.ts` logs debug lines; no `capacitor.config` is committed (native builds are not reproducible); `fix_blue.py`/`fix_emerald.py` are one-off scripts.
 
-## 5. Core Features
+## Working with the owner
 
-**Implemented (frontend + DB wiring):**
-- Email/password auth, forgot/update password, onboarding profile setup.
-- Profiles with company, RERA number, avatar/cover/KYC uploads, verification flag.
-- Listings: create, browse, detail page, image upload, filter bar.
-- Requirements: rich post-requirement form (budget, config, localities, funding, timeline, mandate, etc.).
-- Network: browse/search brokers, broker detail pages.
-- Real-time chat: conversations, participants, messages, optimistic send, unread tracking (localStorage read timestamps), global new-message notification, Supabase Realtime subscription.
-- AI auto-write listing descriptions via `/api/ai-autowrite`.
-- Premium UI: 3D globe/sphere, glassmorphism, Framer Motion transitions, PDF export (jspdf/html2canvas), QR codes.
-
-**Planned / in progress:**
-- PWA + Capacitor native iOS/Android packaging.
-- Real matching engine between listings and requirements.
-- Upgrade/monetization tier (`/upgrade` exists).
-- Hardened RLS, storage security, chat stability (see §6).
-
-## 6. Current Critical Priorities
-
-1. **Auth route protection** — confirm `src/proxy.ts` is active in Next 16 build; `ProtectedRoute.tsx` is client-side only.
-2. **Supabase RLS & database privacy** — profiles are world-readable (`USING (true)`), exposing `kyc_url`/`rera_number`; `conversation_participants` SELECT policy is self-referential (Supabase recursive-RLS risk).
-3. **Storage security** — only `avatars` has path-based RLS (`20260703000001`). `covers`, `listing-images`, `kyc-documents` still use broad `FOR ALL TO authenticated USING (bucket_id=...)` (from `20260616184500_fix_storage.sql`) — any authenticated user can read/overwrite/delete others' files. **Critical: `kyc-documents` is a private bucket, but "KYC all access" `FOR ALL TO authenticated` lets ANY logged-in user read every user's KYC docs** — highest-severity storage leak; fix first.
-4. **Chat stability** — verify hook render cascades; `useMessages` subscribes to ALL message inserts globally then filters in state.
-5. **Real search/filter** — `FilterBar`/network search partly cosmetic; confirm each control binds to a DB query.
-6. **3D performance optimization** — throttle/limit `MarketSphere`, cobe globe, and R3F canvases on mobile.
-7. **Toast/error state polish** — replace remaining `alert()` calls (~10 in `src/`) with proper toast UI.
-8. **Closed beta readiness** — schema/code consistency (see mismatches below), remove debug logs, commit capacitor config.
-
-### Known schema ↔ code divergence (live DB ≠ committed migrations)
-> Verified 2026-07-03: the code is **internally consistent** and treats `auth_id` + `agency_name` as real columns. They are **written** in `onboarding/page.tsx` (`auth_id: userId`, `agency_name: company`) and **read** in ~10 files via `.eq("auth_id", ...)` / `profiles.agency_name`. The committed migrations never create either column. Since the live app works, the **live Supabase `profiles` table almost certainly has `auth_id` and `agency_name` columns that were added out-of-band (dashboard/SQL) and never source-controlled.** Treat the code as the source of truth for the *live* schema — but the divergence itself is the risk.
-- **`profiles.auth_id`** — used everywhere in code as the join/lookup key (distinct from PK `id`), and `20260616194000_create_listings.sql` declares `broker_id REFERENCES public.profiles(auth_id)`. That FK requires `auth_id` to exist and be UNIQUE in the live DB. **A fresh `supabase db reset` from the committed migrations would FAIL** at the listings FK — migrations are stale. Reconcile by adding a committed migration that creates `auth_id`/`agency_name`, so migrations reproduce the live schema.
-- **`agency_name` vs `company_name`** — migrations add `profiles.company_name`; all app code reads/writes `profiles.agency_name`. `company_name` appears to be dead in code. Confirm against live schema before touching either.
-- Note: `requirements.broker_id`, `conversations.created_by`, `messages.sender_id`, `conversation_participants.user_id` all reference `auth.users(id)` directly (not `profiles`), so those paths are consistent.
-- Code relies on FK constraint names `listings_broker_id_fkey` and `requirements_broker_id_fkey` for embedded selects.
-- `src/lib/gemini.ts` is **dead code** (not imported anywhere); the real AI path is `src/app/api/ai-autowrite/route.ts`.
-
-## 7. Security Rules (permanent)
-
-- Never expose secret keys.
-- Never print `.env` values.
-- Never move `SUPABASE_SERVICE_ROLE_KEY` to frontend code. (It is in `.env.local` and currently **not** referenced anywhere in `src/` — keep it that way; use only in server routes if ever needed.)
-- Never move `GEMINI_API_KEY` to frontend code. (Correctly used server-side in the API route; never prefix it with `NEXT_PUBLIC_`.)
-- Never create broad Supabase RLS policies like `USING (true)` unless explicitly justified.
-- Never create storage policies that let one user overwrite another user's files.
-- Always use `auth.uid()` ownership checks for private data.
-- Always source-control Supabase migrations.
-- Remove stray `console.log` of auth/keys (present in `src/utils/supabase/client.ts`).
-
-## 8. Development Rules
-
-- Do not make large changes without a plan first.
-- Before editing, explain which files will change and why.
-- After editing, run:
-  - `npm run lint`
-  - `npx tsc --noEmit`
-  - `npm run build`
-- If a command fails, explain the error and fix it before proceeding.
-- Do not fake completed features.
-- Do not use dummy data unless clearly marked temporary.
-- Do not build new features before fixing security blockers (§6).
-- **Note:** `package.json`'s `lint` script is `eslint` (flat config `eslint.config.mjs`). There is no `typecheck` script — use `npx tsc --noEmit` directly.
-
-## 9. UI/UX Direction
-
-- Premium B2B real estate feel — institutional, trustworthy, understated.
-- **Midnight Slate + Champagne Gold** palette. Verified tokens (`globals.css`): `--color-brand-primary #0B1120`, `--color-brand-accent #D4AF37`, `--color-brand-gold #FACC15`; body bg `#0F1419`, text `#F3F4F6`. App is dark-mode by default (`<html class="... dark">`).
-- Glassmorphism only when it improves clarity (see `GlassCard`, `GlassInput`).
-- Mobile-first layout; respects safe-area insets (`--sat/sar/sab/sal`), disables text selection/callouts/overscroll for a native feel.
-- Strong trust-building design (verification badges, RERA, KYC).
-- Clean loading, empty, and error states (Skeleton components exist — use them).
-- No ugly native `alert()` calls in final UX — migrate to toast.
-
-## 10. Database Rules
-
-- Every `public` schema table exposed to the app must have RLS enabled. Current tables: `profiles`, `listings`, `requirements`, `conversations`, `conversation_participants`, `messages` (all have RLS enabled in migrations).
-- **Messages** must only be readable by conversation participants (enforced via `conversation_participants` EXISTS check — good).
-- **Requirements** must have clear ownership/visibility rules. Current: readable if `is_active = true OR auth.uid() = broker_id`; owner-only insert/update/delete. Note `privacy_level` column exists but is **not** enforced by RLS.
-- **Listings** must have safe ownership rules: public SELECT, owner-only write via `auth.uid() = broker_id` (good — but see the `auth_id` FK bug in §6).
-- **Profiles** must avoid exposing private data. Current `USING (true)` SELECT exposes every column (incl. `kyc_url`, `rera_number`) to everyone — tighten this.
-- **Storage object paths must be scoped by user ID.** Only `avatars` enforces `auth.uid()::text = (storage.foldername(name))[1]`. Apply the same path-scoped pattern to `covers`, `listing-images`, and `kyc-documents`.
-- `conversation_participants` SELECT policy references itself — watch for Supabase RLS infinite-recursion; prefer a `SECURITY DEFINER` helper function if it triggers.
-- Buckets: `avatars` (public), `covers` (public), `listing-images` (public), `kyc-documents` (private).
-
-## 11. Heavy-Lifting Task Policy
-
-Use Claude CLI only for complex tasks: security audits, Supabase migrations, multi-file refactors, chat architecture, database schema design, route protection, performance optimization, build/lint/typecheck debugging, large feature implementation plans. For small copywriting, UI ideas, business strategy, or simple prompts, the user will use ChatGPT instead.
-
-## 12. Required Response Format for Future Tasks
-
-For future development tasks, always respond with:
-
-1. What you understood
-2. Files you will inspect
-3. Risk level
-4. Implementation plan
-5. Files you expect to change
-6. Confirmation request before major edits
-7. Final test commands after changes (`npm run lint`, `npx tsc --noEmit`, `npm run build`)
+- Answer every development task with: what you understood, files to inspect, risk level, implementation plan, files you expect to change, a confirmation request before major edits, and final test commands (`npm run lint`, `npx tsc --noEmit`, `npm run build`).
+- Fix security blockers before new features.
+- Use heavy Claude sessions for security audits, migrations, multi-file refactors and performance work; copywriting and strategy go elsewhere.
