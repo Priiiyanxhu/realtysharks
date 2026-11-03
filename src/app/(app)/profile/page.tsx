@@ -7,6 +7,11 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { User, Building, Phone, Save, Plus, BadgeCheck, UploadCloud, Image as ImageIcon, Briefcase, FileText, ShieldAlert, Star } from "lucide-react";
 import { useRouter } from "next/navigation";
+import {
+  uploadProfileImage,
+  removeSupersededProfileImages,
+  type UploadedProfileImage,
+} from "@/utils/profileImages";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -118,25 +123,23 @@ export default function ProfilePage() {
       let coverUrl = profile.cover_url;
       let kycStatus = profile.kyc_status;
 
+      const uploadedImages: UploadedProfileImage[] = [];
+
       // Upload Avatar
       if (avatarFile) {
-        const fileExt = avatarFile.name.split('.').pop();
-        const filePath = `${profile.id}/avatar.${fileExt}`;
-        const { error: avatarError } = await supabase.storage.from('avatars').upload(filePath, avatarFile, { upsert: true });
-        if (!avatarError) {
-          const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
-          avatarUrl = publicUrl;
+        const { image } = await uploadProfileImage(supabase, profile.id, "avatar", avatarFile);
+        if (image) {
+          avatarUrl = image.publicUrl;
+          uploadedImages.push(image);
         }
       }
 
       // Upload Cover
       if (coverFile) {
-        const fileExt = coverFile.name.split('.').pop();
-        const filePath = `${profile.id}/cover.${fileExt}`;
-        const { error: coverError } = await supabase.storage.from('avatars').upload(filePath, coverFile, { upsert: true });
-        if (!coverError) {
-          const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
-          coverUrl = publicUrl;
+        const { image } = await uploadProfileImage(supabase, profile.id, "cover", coverFile);
+        if (image) {
+          coverUrl = image.publicUrl;
+          uploadedImages.push(image);
         }
       }
 
@@ -171,6 +174,14 @@ export default function ProfilePage() {
         .eq("id", profile.id);
 
       if (error) throw error;
+
+      // The profile row now references the new images, so older avatar.* /
+      // cover.* files (left behind when the file type changed) can go.
+      await Promise.all(
+        uploadedImages.map((image) =>
+          removeSupersededProfileImages(supabase, profile.id, image.kind, image.path)
+        )
+      );
 
       // Contact + Aadhaar PII is stored in the owner-only profiles_private
       // table, never in the authenticated-readable profiles table.

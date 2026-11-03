@@ -8,6 +8,11 @@ import { PremiumButton } from "@/components/ui/PremiumButton";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Check, UploadCloud, User, Building, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  uploadProfileImage,
+  removeSupersededProfileImages,
+  type UploadedProfileImage,
+} from "@/utils/profileImages";
 
 const ROLES = ["SalesMate", "Broker", "Dealer", "Consultant", "Channel Partner", "Developer", "Builder Sales", "Project Co-ordinator", "Marketing Agency"];
 
@@ -51,16 +56,15 @@ export default function OnboardingPage() {
 
     try {
       let avatarUrl = null;
+      let uploadedAvatar: UploadedProfileImage | null = null;
       
       // Upload Avatar
       if (avatarFile) {
-        const fileExt = avatarFile.name.split('.').pop();
-        const filePath = `${userId}/avatar.${fileExt}`;
-        const { error: avatarError } = await supabase.storage.from('avatars').upload(filePath, avatarFile, { upsert: true });
+        const { image, error: avatarError } = await uploadProfileImage(supabase, userId, "avatar", avatarFile);
         if (avatarError) throw avatarError;
-        
-        const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
-        avatarUrl = publicUrl;
+
+        uploadedAvatar = image;
+        avatarUrl = image.publicUrl;
       }
 
       // Upload KYC to private bucket
@@ -96,6 +100,12 @@ export default function OnboardingPage() {
       }, { onConflict: 'id' });
 
       if (profileError) throw profileError;
+
+      // The profile now references the new avatar, so any older avatar.* file
+      // (e.g. avatar.png after switching to avatar.jpg) is safe to delete.
+      if (uploadedAvatar) {
+        await removeSupersededProfileImages(supabase, userId, "avatar", uploadedAvatar.path);
+      }
 
       // Email is contact PII -> owner-only profiles_private, not public profiles.
       if (currentEmail) {
