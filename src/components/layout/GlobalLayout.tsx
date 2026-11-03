@@ -66,7 +66,7 @@ export function GlobalLayout({ children }: { children: React.ReactNode }) {
   ];
 
   return (
-    <div className="flex min-h-[100dvh] w-full bg-[#0B1120] text-white overflow-x-hidden font-sans relative">
+    <div className="flex min-h-[100dvh] w-full bg-[#0B1120] text-white overflow-x-clip font-sans relative">
       
       {/* Noise Grain Texture (GOAT Evolution 4) */}
       <div 

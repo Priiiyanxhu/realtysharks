@@ -35,13 +35,14 @@ Security hardening before closed beta.
 
 1. Owner reviews and applies the pending migrations in order (see CLAUDE.md, "Migrations and database tests")
 2. Verify PostgREST embeds through requirements_feed on staging before the owner-only requirements migration
-3. Replace placeholder chat menu actions (View Profile, Report User, Clear Chat) and consider a block entry point on broker profile pages
-4. Per-user rate limit on /api/ai-autowrite
-5. Admin KYC review (server-side, service_role) so brokers can become verified
-6. Confirm the live requirements foreign key matches the code (see CLAUDE.md, "Known gaps")
-7. Real search and filters (listings feed is wired; verify the rest)
-8. Confirm the CI database job is green on GitHub, require "CI passed" in branch protection, and reduce lint debt (lower .github/lint-baseline.json as it falls)
-9. Closed-beta workflow testing
+3. Fix `position: fixed` being pinned to the page, not the viewport (CLAUDE.md, "Known gaps"): desktop sidebar scrolls away, phone tab bar is off-screen on tall pages
+4. Replace placeholder chat menu actions (View Profile, Report User, Clear Chat) and consider a block entry point on broker profile pages
+5. Per-user rate limit on /api/ai-autowrite
+6. Admin KYC review (server-side, service_role) so brokers can become verified
+7. Confirm the live requirements foreign key matches the code (see CLAUDE.md, "Known gaps")
+8. Real search and filters (listings feed is wired; verify the rest)
+9. Confirm the CI database job is green on GitHub, require "CI passed" in branch protection, and reduce lint debt (lower .github/lint-baseline.json as it falls)
+10. Closed-beta workflow testing
 
 ## Security rules
 
