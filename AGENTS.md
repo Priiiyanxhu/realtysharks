@@ -41,6 +41,7 @@ Security hardening before closed beta.
 - Network Feed items no longer clip their timestamp: the title/time row wraps and the timestamp can break onto two lines in a narrow column (13 widths, 320 to 1600px)
 - Network Feed requirement items link to the requirement's broker (`/network/{broker id}?tab=requirements`, opens the Requirements tab) instead of a "Broker Not Found" page; an item with no broker_id shows without a link
 - Dashboard columns: the Sphere and Network Feed stack full width until 1280px (feed text was 71px wide at 1024px and the Sphere title clipped); the Sphere canvas now covers its card at any width (14 widths, 320 to 1600px)
+- Empty-chat copy no longer claims end-to-end encryption (it is false: chat is plain text under RLS); a unit test guards against the claim returning
 
 ## Current priorities
 

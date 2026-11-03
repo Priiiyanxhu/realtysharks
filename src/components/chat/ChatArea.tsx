@@ -86,9 +86,11 @@ export function ChatArea({
                 <div className="w-16 h-16 bg-[#D4AF37]/10 rounded-full flex items-center justify-center mb-4 border border-[#D4AF37]/20">
                   <Building className="w-8 h-8 text-[#D4AF37]" />
                 </div>
-                <h3 className="text-white font-semibold text-lg mb-2">Secure Direct Mandate</h3>
-                <p className="text-gray-500 text-sm max-w-sm">
-                  This is an end-to-end encrypted channel. Send your inquiry below to initiate the mandate process.
+                <h3 className="text-white font-semibold text-lg mb-2">Direct Mandate</h3>
+                {/* Say only what the database enforces (messages are readable by the two participants only, via RLS).
+                    Messages are plain text in Postgres, not client-side encrypted, so do not claim encryption. */}
+                <p className="text-gray-500 text-sm max-w-sm [overflow-wrap:anywhere]">
+                  {`This is a direct conversation between you and ${activeConversation.name}. Other brokers can't see it. Send your inquiry below to initiate the mandate process.`}
                 </p>
               </div>
             ) : (
