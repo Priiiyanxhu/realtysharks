@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/utils/supabase/client';
+import { describeSendError } from '@/utils/chatErrors';
 
 export type Message = {
   id: string;
@@ -187,9 +188,9 @@ export function useMessages(userId: string | null, activeConversationId: string 
       .single();
 
     if (error) {
-      console.error("Message send failed:", error);
+      console.error("Message send failed:", { code: error.code });
       setAllMessages(prev => prev.filter(m => m.id !== tempId));
-      return { success: false, error: error.message };
+      return { success: false, error: describeSendError(error).message };
     }
 
     const persistedMessage = data as Message;

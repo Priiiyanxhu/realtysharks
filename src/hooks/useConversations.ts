@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '@/utils/supabase/client';
 import { Message } from './useMessages';
+import { describeStartChatError, type ChatErrorInfo } from '@/utils/chatErrors';
 
 export type ProfileInfo = {
   id: string;
@@ -20,6 +21,10 @@ export type Conversation = {
   unread: number;
   timestamp: number;
 };
+
+export type GetOrCreateConversationResult =
+  | { conversationId: string; error: null }
+  | { conversationId: null; error: ChatErrorInfo };
 
 export function useConversations(userId: string | null, allMessages: Message[], activeChat: string | null, urlBrokerId: string | null) {
   const [conversationPartners, setConversationPartners] = useState<Record<string, string>>({});
@@ -175,7 +180,7 @@ export function useConversations(userId: string | null, allMessages: Message[], 
     return inbox;
   }, [allMessages, conversationPartners, profiles, activeChat, userId, urlBrokerId]);
 
-  const getOrCreateConversation = useCallback(async (partnerId: string): Promise<string | null> => {
+  const getOrCreateConversation = useCallback(async (partnerId: string): Promise<GetOrCreateConversationResult> => {
     const { data: conversationId, error } = await supabase.rpc(
       'get_or_create_direct_conversation',
       { p_partner_id: partnerId }
@@ -183,16 +188,16 @@ export function useConversations(userId: string | null, allMessages: Message[], 
 
     if (error) {
       console.error('Failed to get or create direct conversation.', { code: error.code });
-      return null;
+      return { conversationId: null, error: describeStartChatError(error) };
     }
 
     if (typeof conversationId !== 'string') {
       console.error('Direct conversation RPC returned an invalid response.');
-      return null;
+      return { conversationId: null, error: describeStartChatError(null) };
     }
 
     setConversationPartners(prev => ({ ...prev, [conversationId]: partnerId }));
-    return conversationId;
+    return { conversationId, error: null };
   }, []);
 
   return { conversations, conversationPartners, getOrCreateConversation };

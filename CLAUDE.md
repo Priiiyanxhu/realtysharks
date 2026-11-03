@@ -13,7 +13,7 @@ Mobile-first B2B real-estate network for Indian brokers, channel partners, devel
 - **AI:** `/api/ai-autowrite` (Gemini, server-only key). It verifies the caller and caps prompt size; there is no per-user rate limit yet.
 - **Profiles:** `profiles.id` = `auth.users.id`, and `auth_id` mirrors it (the app queries by `auth_id`). Other brokers' profiles are read from the `profiles_public` view. Email, phone and Aadhaar live in owner-only `profiles_private`.
 - **Requirements:** read other brokers' requirements from `requirements_feed`; read your own from the table, which is owner-only once the rollout step below is applied. Details under "Privacy model".
-- **Chat:** start conversations with the `get_or_create_direct_conversation` RPC (INSERT on `conversations`/`conversation_participants` is revoked) and mark read with `mark_conversation_messages_read`. Messages are sent by direct insert under RLS. Realtime subscribes per conversation. `GlobalNotification` is a deliberate stub (messages have no recipient column to scope a global feed).
+- **Chat:** start conversations with the `get_or_create_direct_conversation` RPC (INSERT on `conversations`/`conversation_participants` is revoked) and mark read with `mark_conversation_messages_read`. Messages are sent by direct insert under RLS. Realtime subscribes per conversation. Rejections become user-facing copy in `src/utils/chatErrors.ts`, which matches the RPC's error messages (pinned by pgTAP test 09), so change both together. `GlobalNotification` is a deliberate stub (messages have no recipient column to scope a global feed).
 - **Storage:** objects live under `{auth.uid()}/…` in every bucket and RLS enforces that folder. `avatars`, `covers`, `listing-images` are public (images render by URL); `kyc-documents` is private. Avatar/cover uploads go through `src/utils/profileImages.ts`.
 
 ## Privacy model (enforced in the database)
@@ -44,8 +44,8 @@ Institutional, understated, trustworthy: Midnight Slate + Champagne Gold (tokens
 
 - `requirements.broker_id` references `auth.users` in migrations, yet the code embeds `profiles!requirements_broker_id_fkey`. Confirm the live FK before touching either. The same embeds through `requirements_feed` are unverified against PostgREST.
 - `MarketSphere` reads the legacy `listings.location` column that new listings never fill, so the globe shows demo data.
-- Chat failures (blocked, not onboarded, daily cap) surface as a generic "Failed to create conversation"; no UI to block a user.
-- Profile page: a failed avatar/cover upload is silent, and 10 `alert()` calls remain.
+- No UI to block or unblock a user; `user_blocks` is API-only.
+- Profile page: a failed avatar/cover upload is silent, and 9 `alert()` calls remain.
 - `src/utils/supabase/client.ts` logs debug lines; no `capacitor.config` is committed (native builds are not reproducible); `fix_blue.py`/`fix_emerald.py` are one-off scripts.
 
 ## Working with the owner

@@ -13,7 +13,9 @@ interface ChatAreaProps {
   userId: string | null;
   taggedListing: { id: string; title: string; price: string; location: string } | null;
   onClearTaggedListing: () => void;
-  onSendMessage: (content: string) => void;
+  onSendMessage: (content: string) => Promise<boolean | void> | boolean | void;
+  errorMessage?: string | null;
+  onDismissError?: () => void;
   onBackToMobileList: () => void;
   isVisible: boolean;
 }
@@ -25,6 +27,8 @@ export function ChatArea({
   taggedListing,
   onClearTaggedListing,
   onSendMessage,
+  errorMessage,
+  onDismissError,
   onBackToMobileList,
   isVisible
 }: ChatAreaProps) {
@@ -89,6 +93,22 @@ export function ChatArea({
                 <button onClick={onClearTaggedListing} className="text-xs text-gray-400 hover:text-white underline">
                   Remove Tag
                 </button>
+              </div>
+            )}
+            {errorMessage && (
+              <div
+                role="alert"
+                className="px-4 py-3 bg-red-500/10 border-b border-red-500/20 flex items-start justify-between gap-3"
+              >
+                <p className="text-sm text-red-300">{errorMessage}</p>
+                {onDismissError && (
+                  <button
+                    onClick={onDismissError}
+                    className="text-xs text-red-300/80 hover:text-red-200 underline shrink-0"
+                  >
+                    Dismiss
+                  </button>
+                )}
               </div>
             )}
             <ChatInput onSend={onSendMessage} />

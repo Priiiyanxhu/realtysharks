@@ -17,6 +17,7 @@ function MessagingEngine() {
   const [isMobileListVisible, setIsMobileListVisible] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
   const [taggedListing, setTaggedListing] = useState<{ id: string, title: string, price: string, location: string } | null>(null);
+  const [chatError, setChatError] = useState<string | null>(null);
 
   // Initialize Session
   useEffect(() => {
@@ -82,14 +83,19 @@ function MessagingEngine() {
     setActiveChat(id);
     setIsMobileListVisible(false);
     setTaggedListing(null);
+    setChatError(null);
     router.replace('/messages', { scroll: false });
   };
 
   const activeConversation = conversations.find(c => c.id === activeChat);
 
-  const handleSendMessage = async (content: string) => {
-    if (!userId || !activeChat || !content.trim() || !activeConversation) return;
+  // Resolves true when the message was sent, false when it was not, so the
+  // input can hand the text back to the user instead of losing it.
+  const handleSendMessage = async (content: string): Promise<boolean> => {
+    if (!userId || !activeChat || !content.trim() || !activeConversation) return false;
 
+    setChatError(null);
+    const tagToRestore = taggedListing;
     let finalContent = content.trim();
 
     if (taggedListing) {
@@ -100,16 +106,23 @@ function MessagingEngine() {
     let targetConvId = activeChat;
     
     if (activeChat.startsWith('new-')) {
-      const newConvId = await getOrCreateConversation(activeConversation.partnerId);
-      if (!newConvId) {
-        alert("Failed to create conversation");
-        return;
+      const { conversationId, error } = await getOrCreateConversation(activeConversation.partnerId);
+      if (error) {
+        setChatError(error.message);
+        setTaggedListing(tagToRestore);
+        return false;
       }
-      targetConvId = newConvId;
+      targetConvId = conversationId;
       setActiveChat(targetConvId);
     }
 
-    await sendMessage(targetConvId, finalContent);
+    const result = await sendMessage(targetConvId, finalContent);
+    if (!result?.success) {
+      setChatError(result?.error ?? "Your message couldn't be sent. Please try again.");
+      setTaggedListing(tagToRestore);
+      return false;
+    }
+    return true;
   };
 
   return (
@@ -127,6 +140,8 @@ function MessagingEngine() {
         taggedListing={taggedListing}
         onClearTaggedListing={() => setTaggedListing(null)}
         onSendMessage={handleSendMessage}
+        errorMessage={chatError}
+        onDismissError={() => setChatError(null)}
         onBackToMobileList={() => setIsMobileListVisible(true)}
         isVisible={isMobileListVisible}
       />

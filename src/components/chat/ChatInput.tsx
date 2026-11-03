@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Send, Paperclip, Image as ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export function ChatInput({ onSend }: { onSend?: (msg: string) => void }) {
+export function ChatInput({ onSend }: { onSend?: (msg: string) => Promise<boolean | void> | boolean | void }) {
   const [message, setMessage] = useState("");
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
@@ -16,13 +16,20 @@ export function ChatInput({ onSend }: { onSend?: (msg: string) => void }) {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim()) return;
-    if (onSend) onSend(message);
+    const text = message;
+    if (!text.trim()) return;
     setMessage("");
     if (textareaRef.current) {
       textareaRef.current.style.height = '52px';
+    }
+    // Clear immediately for responsiveness, but hand the text back if the send
+    // failed (unless the user has already started typing something new).
+    const sent = onSend ? await onSend(text) : true;
+    if (sent === false) {
+      setMessage((current) => (current ? current : text));
+      requestAnimationFrame(adjustHeight);
     }
   };
 
