@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { PropertyCard } from "@/components/ui/PropertyCard";
@@ -17,7 +17,11 @@ export default function PublicBrokerProfile() {
   const [listings, setListings] = useState<any[]>([]);
   const [requirements, setRequirements] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'listings' | 'requirements'>('listings');
+  // ?tab=requirements opens the Requirements tab (the Network Feed links here for requirement items).
+  const searchParams = useSearchParams();
+  const [activeTab, setActiveTab] = useState<'listings' | 'requirements'>(
+    searchParams.get('tab') === 'requirements' ? 'requirements' : 'listings'
+  );
 
   useEffect(() => {
     if (!brokerId) return;
