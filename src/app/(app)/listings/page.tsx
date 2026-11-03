@@ -37,6 +37,7 @@ type RequirementData = {
   id: string;
   broker_id: string;
   details: string | null;
+  privacy_level: string | null;
   budget_min_inr: number | null;
   budget_max_inr: number | null;
   city: string | null;
@@ -171,6 +172,7 @@ export default function GlobalListingsPage() {
               id,
               broker_id,
               details,
+              privacy_level,
               budget_min_inr,
               budget_max_inr,
               city,
@@ -346,7 +348,7 @@ export default function GlobalListingsPage() {
                   <RequirementCard
                     key={`req-${item.id}`}
                     id={req.id}
-                    title={req.details || "Buyer requirement"}
+                    title={req.details || (req.privacy_level && req.privacy_level !== "Standard" ? "Confidential requirement" : "Buyer requirement")}
                     budgetMin={req.budget_min_inr ?? 0}
                     budgetMax={req.budget_max_inr ?? 0}
                     location={req.city || "Location not specified"}

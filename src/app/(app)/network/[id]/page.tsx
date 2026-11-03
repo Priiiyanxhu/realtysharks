@@ -218,7 +218,7 @@ export default function PublicBrokerProfile() {
                         <p className="text-[#D4AF37] font-medium mt-1">
                           Budget: ₹{((req.budget_min_inr || 0)/10000000).toFixed(1)}Cr - ₹{((req.budget_max_inr || 0)/10000000).toFixed(1)}Cr
                         </p>
-                        <p className="text-sm text-white/60 mt-3 line-clamp-2 max-w-3xl">{req.details}</p>
+                        <p className="text-sm text-white/60 mt-3 line-clamp-2 max-w-3xl">{req.details ?? (req.privacy_level && req.privacy_level !== "Standard" ? "Client details are confidential." : "")}</p>
                       </div>
                       <span className="text-xs text-[#D4AF37] bg-[#D4AF37]/10 px-3 py-1 rounded-full font-bold uppercase tracking-widest">
                         Active

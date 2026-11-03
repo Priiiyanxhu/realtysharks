@@ -2,7 +2,7 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 
-SELECT extensions.plan(21);
+SELECT extensions.plan(23);
 
 -- ---------------------------------------------------------------------------
 -- Structure and grants
@@ -66,38 +66,38 @@ VALUES
 
 INSERT INTO public.requirements
   (id, broker_id, property_type, city, preferred_localities, budget_max_inr,
-   funding_status, purchase_purpose, client_profile, is_active, privacy_level)
+   funding_status, purchase_purpose, client_profile, details, is_active, privacy_level)
 VALUES
   -- Bob: confidential, active
   ('00000000-0000-4000-8000-000000000541',
    '00000000-0000-4000-8000-000000000532', 'Apartment', 'Mumbai',
    ARRAY['Bandra', 'Worli'], 90000000,
-   'cash ready', 'investment', 'VIP client', true, 'Highly Confidential'),
+   'cash ready', 'investment', 'VIP client', 'Detail VIP client', true, 'Highly Confidential'),
   -- Bob: standard, active
   ('00000000-0000-4000-8000-000000000542',
    '00000000-0000-4000-8000-000000000532', 'Villa', 'Pune',
    ARRAY['Baner'], 40000000,
-   'loan approved', 'self use', 'Family', true, 'Standard'),
+   'loan approved', 'self use', 'Family', 'Detail Family', true, 'Standard'),
   -- Bob: legacy NULL privacy_level, active
   ('00000000-0000-4000-8000-000000000543',
    '00000000-0000-4000-8000-000000000532', 'Office', 'Delhi',
    ARRAY['Gurgaon'], 20000000,
-   'self funded', 'expansion', 'Startup', true, NULL),
+   'self funded', 'expansion', 'Startup', 'Detail Startup', true, NULL),
   -- Bob: unknown value, active -> fails closed (masked)
   ('00000000-0000-4000-8000-000000000544',
    '00000000-0000-4000-8000-000000000532', 'Plot', 'Goa',
    ARRAY['Assagao'], 15000000,
-   'cash ready', 'holiday home', 'NRI', true, 'Top Secret'),
+   'cash ready', 'holiday home', 'NRI', 'Detail NRI', true, 'Top Secret'),
   -- Bob: confidential but inactive
   ('00000000-0000-4000-8000-000000000545',
    '00000000-0000-4000-8000-000000000532', 'Apartment', 'Chennai',
    ARRAY['Adyar'], 30000000,
-   'cash ready', 'investment', 'Hidden', false, 'Highly Confidential'),
+   'cash ready', 'investment', 'Hidden', 'Detail Hidden', false, 'Highly Confidential'),
   -- Alice: confidential, active (her own)
   ('00000000-0000-4000-8000-000000000546',
    '00000000-0000-4000-8000-000000000531', 'Apartment', 'Bengaluru',
    ARRAY['Indiranagar'], 50000000,
-   'cash ready', 'investment', 'Alice VIP', true, 'Highly Confidential');
+   'cash ready', 'investment', 'Alice VIP', 'Detail Alice VIP', true, 'Highly Confidential');
 
 -- ---------------------------------------------------------------------------
 -- Anonymous: nothing
@@ -128,19 +128,21 @@ SELECT extensions.is(
 
 SELECT extensions.is(
   (SELECT funding_status || '/' || purchase_purpose || '/' ||
-          pg_catalog.array_to_string(preferred_localities, ',')
+          pg_catalog.array_to_string(preferred_localities, ',') || '/' ||
+          client_profile || '/' || details
      FROM public.requirements_feed
     WHERE id = '00000000-0000-4000-8000-000000000542'),
-  'loan approved/self use/Baner',
+  'loan approved/self use/Baner/Family/Detail Family',
   'Standard requirement is fully visible'
 );
 
 SELECT extensions.is(
   (SELECT funding_status || '/' || purchase_purpose || '/' ||
-          pg_catalog.array_to_string(preferred_localities, ',')
+          pg_catalog.array_to_string(preferred_localities, ',') || '/' ||
+          client_profile || '/' || details
      FROM public.requirements_feed
     WHERE id = '00000000-0000-4000-8000-000000000543'),
-  'self funded/expansion/Gurgaon',
+  'self funded/expansion/Gurgaon/Startup/Detail Startup',
   'legacy NULL privacy_level is treated as Standard'
 );
 
@@ -148,9 +150,11 @@ SELECT extensions.ok(
   (SELECT funding_status IS NULL
       AND purchase_purpose IS NULL
       AND preferred_localities IS NULL
+      AND client_profile IS NULL
+      AND details IS NULL
      FROM public.requirements_feed
     WHERE id = '00000000-0000-4000-8000-000000000541'),
-  'Highly Confidential: funding_status, purchase_purpose and preferred_localities are masked'
+  'Highly Confidential: funding_status, purchase_purpose, preferred_localities, client_profile and details are masked'
 );
 
 SELECT extensions.is(
@@ -166,6 +170,8 @@ SELECT extensions.ok(
   (SELECT funding_status IS NULL
       AND purchase_purpose IS NULL
       AND preferred_localities IS NULL
+      AND client_profile IS NULL
+      AND details IS NULL
      FROM public.requirements_feed
     WHERE id = '00000000-0000-4000-8000-000000000544'),
   'an unknown privacy_level value fails closed (masked)'
@@ -189,11 +195,29 @@ SELECT extensions.is(
 );
 
 SELECT extensions.is(
+  (SELECT pg_catalog.count(*)::int
+     FROM public.requirements_feed
+    WHERE client_profile = 'VIP client'),
+  0,
+  'filtering on masked client_profile cannot reveal confidential values'
+);
+
+SELECT extensions.is(
+  (SELECT pg_catalog.count(*)::int
+     FROM public.requirements_feed
+    WHERE details ILIKE '%VIP%'
+      AND broker_id = '00000000-0000-4000-8000-000000000532'),
+  0,
+  'keyword search on masked details cannot reveal confidential values'
+);
+
+SELECT extensions.is(
   (SELECT funding_status || '/' || purchase_purpose || '/' ||
-          pg_catalog.array_to_string(preferred_localities, ',')
+          pg_catalog.array_to_string(preferred_localities, ',') || '/' ||
+          client_profile || '/' || details
      FROM public.requirements_feed
     WHERE id = '00000000-0000-4000-8000-000000000546'),
-  'cash ready/investment/Indiranagar',
+  'cash ready/investment/Indiranagar/Alice VIP/Detail Alice VIP',
   'a poster sees their own confidential requirement unmasked'
 );
 
@@ -229,11 +253,12 @@ SET LOCAL "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000532';
 
 SELECT extensions.is(
   (SELECT funding_status || '/' || purchase_purpose || '/' ||
-          pg_catalog.array_to_string(preferred_localities, ',')
+          pg_catalog.array_to_string(preferred_localities, ',') || '/' ||
+          client_profile || '/' || details
      FROM public.requirements_feed
     WHERE id = '00000000-0000-4000-8000-000000000541'),
-  'cash ready/investment/Bandra,Worli',
-  'Bob sees his own confidential requirement unmasked'
+  'cash ready/investment/Bandra,Worli/VIP client/Detail VIP client',
+  'Bob sees his own confidential requirement unmasked (all five fields)'
 );
 
 SELECT extensions.is(
