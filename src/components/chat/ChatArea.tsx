@@ -21,6 +21,10 @@ interface ChatAreaProps {
   blockPending?: boolean;
   onRequestBlock?: () => void;
   onUnblock?: () => void;
+  onViewProfile?: () => void;
+  onReport?: () => void;
+  onClearChat?: () => void;
+  canClearChat?: boolean;
   onBackToMobileList: () => void;
   isVisible: boolean;
 }
@@ -38,6 +42,10 @@ export function ChatArea({
   blockPending = false,
   onRequestBlock,
   onUnblock,
+  onViewProfile,
+  onReport,
+  onClearChat,
+  canClearChat,
   onBackToMobileList,
   isVisible
 }: ChatAreaProps) {
@@ -65,6 +73,10 @@ export function ChatArea({
             blockPending={blockPending}
             onBlock={onRequestBlock}
             onUnblock={onUnblock}
+            onViewProfile={onViewProfile}
+            onReport={onReport}
+            onClearChat={onClearChat}
+            canClearChat={canClearChat}
           />
           
           <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 flex flex-col">

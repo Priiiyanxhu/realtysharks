@@ -8,6 +8,9 @@ import { useMessages } from "@/hooks/useMessages";
 import { useConversations } from "@/hooks/useConversations";
 import { useBlocks } from "@/hooks/useBlocks";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { ReportUserDialog } from "@/components/chat/ReportUserDialog";
+import { reportUser, type ReportOutcome } from "@/utils/userReports";
+import { filterClearedMessages } from "@/utils/conversationClear";
 import { ConversationList } from "@/components/chat/ConversationList";
 import { ChatArea } from "@/components/chat/ChatArea";
 
@@ -22,6 +25,10 @@ function MessagingEngine() {
   const [chatError, setChatError] = useState<string | null>(null);
   const [blockDialog, setBlockDialog] = useState<{ partnerId: string; name: string } | null>(null);
   const [blockDialogError, setBlockDialogError] = useState<string | null>(null);
+  const [reportTarget, setReportTarget] = useState<{ partnerId: string; name: string; conversationId: string | null } | null>(null);
+  const [clearDialogOpen, setClearDialogOpen] = useState(false);
+  const [clearDialogError, setClearDialogError] = useState<string | null>(null);
+  const [clearPending, setClearPending] = useState(false);
 
   // Initialize Session
   useEffect(() => {
@@ -35,16 +42,18 @@ function MessagingEngine() {
   // Use Custom Hooks
   const { allMessages, markMessagesAsRead, sendMessage } = useMessages(userId, activeChat);
   const urlBrokerId = searchParams.get('brokerId');
-  const { conversations, getOrCreateConversation } = useConversations(userId, allMessages, activeChat, urlBrokerId);
+  const { conversations, getOrCreateConversation, clearedAt, clearConversation } = useConversations(userId, allMessages, activeChat, urlBrokerId);
   const { blockedIds, pendingIds, block, unblock } = useBlocks(userId);
 
   // Derive active messages and mark as read
   const messages = useMemo(() => {
     if (!activeChat || activeChat.startsWith('new-')) return [];
-    return allMessages
-      .filter(m => m.conversation_id === activeChat)
-      .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-  }, [allMessages, activeChat]);
+    // "Clear Chat" hides the messages from before the clear, for this user only.
+    return filterClearedMessages(
+      allMessages.filter(m => m.conversation_id === activeChat),
+      clearedAt[activeChat]
+    ).sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+  }, [allMessages, activeChat, clearedAt]);
 
   useEffect(() => {
     if (!activeChat || activeChat.startsWith('new-')) return;
@@ -101,6 +110,56 @@ function MessagingEngine() {
     if (!activeConversation) return;
     setBlockDialogError(null);
     setBlockDialog({ partnerId: activeConversation.partnerId, name: activeConversation.name });
+  };
+
+  const hasSavedConversation = !!activeChat && !activeChat.startsWith('new-');
+
+  const handleViewProfile = () => {
+    if (activePartnerId) router.push(`/network/${activePartnerId}`);
+  };
+
+  const handleRequestReport = () => {
+    if (!activeConversation) return;
+    setReportTarget({
+      partnerId: activeConversation.partnerId,
+      name: activeConversation.name,
+      conversationId: hasSavedConversation ? activeChat : null,
+    });
+  };
+
+  const handleSubmitReport = async (values: { reason: string; details: string; alsoBlock: boolean }): Promise<ReportOutcome & { extraNote?: string }> => {
+    if (!reportTarget) return { kind: 'error', message: "We couldn't send your report. Please try again." };
+    const outcome = await reportUser(supabase, {
+      reportedId: reportTarget.partnerId,
+      reason: values.reason,
+      details: values.details,
+      conversationId: reportTarget.conversationId,
+    });
+    if ((outcome.kind === 'created' || outcome.kind === 'duplicate') && values.alsoBlock) {
+      const blocked = await block(reportTarget.partnerId);
+      return {
+        ...outcome,
+        extraNote: blocked.ok
+          ? `${reportTarget.name} has also been blocked.`
+          : `We couldn't block ${reportTarget.name} just now. You can block them from the chat menu.`,
+      };
+    }
+    return outcome;
+  };
+
+  const handleRequestClear = () => {
+    if (!hasSavedConversation) return;
+    setClearDialogError(null);
+    setClearDialogOpen(true);
+  };
+
+  const handleConfirmClear = async () => {
+    if (!activeChat || !hasSavedConversation) return;
+    setClearPending(true);
+    const result = await clearConversation(activeChat);
+    setClearPending(false);
+    if (result.ok) setClearDialogOpen(false);
+    else setClearDialogError(result.error);
   };
 
   const handleConfirmBlock = async () => {
@@ -181,6 +240,10 @@ function MessagingEngine() {
         blockPending={isBlockPending}
         onRequestBlock={handleRequestBlock}
         onUnblock={handleUnblock}
+        onViewProfile={handleViewProfile}
+        onReport={handleRequestReport}
+        onClearChat={handleRequestClear}
+        canClearChat={hasSavedConversation}
         onBackToMobileList={() => setIsMobileListVisible(true)}
         isVisible={isMobileListVisible}
       />
@@ -202,6 +265,32 @@ function MessagingEngine() {
         errorMessage={blockDialogError}
         onConfirm={handleConfirmBlock}
         onCancel={() => setBlockDialog(null)}
+      />
+      <ConfirmDialog
+        open={clearDialogOpen}
+        tone="danger"
+        title="Clear this chat?"
+        description={
+          <>
+            <p>
+              This hides the current messages from <strong>your</strong> view only.{" "}
+              {activeConversation?.name ?? "The other broker"} still sees them, and new messages appear as usual.
+            </p>
+          </>
+        }
+        confirmLabel="Clear chat"
+        busy={clearPending}
+        errorMessage={clearDialogError}
+        onConfirm={handleConfirmClear}
+        onCancel={() => setClearDialogOpen(false)}
+      />
+      <ReportUserDialog
+        open={reportTarget !== null}
+        partnerName={reportTarget?.name ?? ""}
+        hasConversation={!!reportTarget?.conversationId}
+        canOfferBlock={!!reportTarget && !blockedIds.has(reportTarget.partnerId)}
+        onSubmit={handleSubmitReport}
+        onClose={() => setReportTarget(null)}
       />
     </div>
   );

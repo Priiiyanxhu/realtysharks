@@ -32,12 +32,13 @@ Security hardening before closed beta.
 - Sideways overflow clipped and the root glows' blank scroll tail removed (pages end at their content); sticky bars stick; fixed sidebar and phone tab bar are truly fixed (opacity-only template); chat screen ends above the phone tab bar
 - CI workflow (typecheck, lint ratchet, unit tests, build, migration replay + pgTAP)
 - MarketSphere viewport and reduced-motion optimization
+- Chat header menu: View Profile, Report User (`report_user` RPC, private, deduped and capped) and Clear Chat (per-user hide) are real; placeholders removed
 
 ## Current priorities
 
 1. Owner reviews and applies the pending migrations in order (see CLAUDE.md, "Migrations and database tests")
 2. Verify PostgREST embeds through requirements_feed on staging before the owner-only requirements migration
-3. Replace placeholder chat menu actions (View Profile, Report User, Clear Chat) and consider a block entry point on broker profile pages
+3. Admin review of `user_reports` (server-side, service_role; nothing reads them yet), and consider a block/report entry point on broker profile pages
 4. Admin KYC review (server-side, service_role) so brokers can become verified
 5. Blunt account farming (email confirmation or other signup friction): per-user limits, including AI writing, can be sidestepped with new accounts; the global AI cap is only the cost backstop
 6. Confirm the live requirements foreign key matches the code (see CLAUDE.md, "Known gaps")

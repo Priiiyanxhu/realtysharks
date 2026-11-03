@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '@/utils/supabase/client';
 import { Message } from './useMessages';
 import { describeStartChatError, type ChatErrorInfo } from '@/utils/chatErrors';
+import { describeClearError, isVisibleAfterClear } from '@/utils/conversationClear';
 
 export type ProfileInfo = {
   id: string;
@@ -29,6 +30,29 @@ export type GetOrCreateConversationResult =
 export function useConversations(userId: string | null, allMessages: Message[], activeChat: string | null, urlBrokerId: string | null) {
   const [conversationPartners, setConversationPartners] = useState<Record<string, string>>({});
   const [profiles, setProfiles] = useState<Record<string, ProfileInfo>>({});
+  // conversation id -> ISO time the user cleared it ("Clear Chat" hides older messages for them only)
+  const [clearedAt, setClearedAt] = useState<Record<string, string>>({});
+
+  // 0. Load the user's own clear markers. Tolerant on purpose: if the table does
+  // not exist yet (code deployed before the migration) nothing is treated as cleared.
+  useEffect(() => {
+    if (!userId) return;
+    let cancelled = false;
+    const loadClears = async () => {
+      const { data, error } = await supabase
+        .from('conversation_clears')
+        .select('conversation_id, cleared_at')
+        .eq('user_id', userId);
+      if (cancelled) return;
+      if (error || !data) {
+        if (error) console.warn('Could not load cleared chats.', { code: error.code });
+        return;
+      }
+      setClearedAt(Object.fromEntries(data.map((row) => [row.conversation_id as string, row.cleared_at as string])));
+    };
+    loadClears();
+    return () => { cancelled = true; };
+  }, [userId]);
 
   // 1. Fetch conversation partners
   useEffect(() => {
@@ -114,6 +138,8 @@ export function useConversations(userId: string | null, allMessages: Message[], 
 
     allMessages.forEach(msg => {
       const convId = msg.conversation_id;
+      // Messages the user cleared are hidden from previews and unread counts too.
+      if (!isVisibleAfterClear(msg, clearedAt[convId])) return;
       
       if (!latestMessageByConv[convId]) {
         latestMessageByConv[convId] = msg;
@@ -137,6 +163,17 @@ export function useConversations(userId: string | null, allMessages: Message[], 
       let previewContent = "New Conversation";
       let timeStr = "Now";
       let timestamp = 0;
+
+      if (!lastMsg && clearedAt[convId]) {
+        const clearedDate = new Date(clearedAt[convId]);
+        if (!Number.isNaN(clearedDate.getTime())) {
+          previewContent = "Chat cleared";
+          timeStr = clearedDate.toDateString() === new Date().toDateString()
+            ? clearedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            : "Yesterday";
+          timestamp = clearedDate.getTime();
+        }
+      }
 
       if (lastMsg) {
         previewContent = lastMsg.body?.replace(/__TAG_LISTING:.*?__\n?/, '🏙️ Property Inquiry: ') || '';
@@ -178,7 +215,7 @@ export function useConversations(userId: string | null, allMessages: Message[], 
 
     inbox.sort((a, b) => b.timestamp - a.timestamp);
     return inbox;
-  }, [allMessages, conversationPartners, profiles, activeChat, userId, urlBrokerId]);
+  }, [allMessages, conversationPartners, profiles, activeChat, userId, urlBrokerId, clearedAt]);
 
   const getOrCreateConversation = useCallback(async (partnerId: string): Promise<GetOrCreateConversationResult> => {
     const { data: conversationId, error } = await supabase.rpc(
@@ -200,5 +237,23 @@ export function useConversations(userId: string | null, allMessages: Message[], 
     return { conversationId, error: null };
   }, []);
 
-  return { conversations, conversationPartners, getOrCreateConversation };
+  const clearConversation = useCallback(async (conversationId: string): Promise<{ ok: true } | { ok: false; error: string }> => {
+    const { data, error } = await supabase.rpc('clear_conversation_history', {
+      p_conversation_id: conversationId,
+    });
+
+    if (error) {
+      console.error('Failed to clear conversation.', { code: error.code });
+      return { ok: false, error: describeClearError(error) };
+    }
+
+    // The server returns its own timestamp; use it so the hide-line matches message times.
+    const markedAt = typeof data === 'string' ? data : null;
+    if (!markedAt) return { ok: false, error: describeClearError(null) };
+
+    setClearedAt(prev => ({ ...prev, [conversationId]: markedAt }));
+    return { ok: true };
+  }, []);
+
+  return { conversations, conversationPartners, getOrCreateConversation, clearedAt, clearConversation };
 }

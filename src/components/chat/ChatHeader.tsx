@@ -14,6 +14,10 @@ export function ChatHeader({
   blockPending = false,
   onBlock,
   onUnblock,
+  onViewProfile,
+  onReport,
+  onClearChat,
+  canClearChat = true,
 }: { 
   agentName: string, 
   agentCompany: string, 
@@ -25,6 +29,11 @@ export function ChatHeader({
   blockPending?: boolean,
   onBlock?: () => void,
   onUnblock?: () => void,
+  onViewProfile?: () => void,
+  onReport?: () => void,
+  onClearChat?: () => void,
+  /** False when there is no conversation yet (nothing to clear). */
+  canClearChat?: boolean,
 }) {
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -91,8 +100,10 @@ export function ChatHeader({
           {showMenu && (
             <div role="menu" className="absolute right-0 mt-2 w-56 bg-[#0A0D12] border border-white/10 rounded-xl shadow-2xl py-1 z-50 animate-in fade-in zoom-in duration-200">
               <button 
-                onClick={() => { alert('View Profile clicked'); setShowMenu(false); }}
-                className="w-full px-4 py-2 text-sm text-left text-gray-300 hover:bg-white/5 hover:text-white flex items-center gap-2 transition-colors"
+                role="menuitem"
+                disabled={!onViewProfile}
+                onClick={() => closeMenuAndRun(onViewProfile)}
+                className="w-full px-4 py-2 text-sm text-left text-gray-300 hover:bg-white/5 hover:text-white flex items-center gap-2 transition-colors disabled:opacity-50"
               >
                 <User className="w-4 h-4" /> View Profile
               </button>
@@ -116,15 +127,19 @@ export function ChatHeader({
                 </button>
               )}
               <button 
-                onClick={() => { alert('Report User clicked'); setShowMenu(false); }}
-                className="w-full px-4 py-2 text-sm text-left text-orange-400 hover:bg-orange-500/10 flex items-center gap-2 transition-colors"
+                role="menuitem"
+                disabled={!onReport}
+                onClick={() => closeMenuAndRun(onReport)}
+                className="w-full px-4 py-2 text-sm text-left text-orange-400 hover:bg-orange-500/10 flex items-center gap-2 transition-colors disabled:opacity-50"
               >
                 <Flag className="w-4 h-4" /> Report User
               </button>
               <div className="h-px bg-white/10 my-1"></div>
               <button 
-                onClick={() => { alert('Clear Chat clicked'); setShowMenu(false); }}
-                className="w-full px-4 py-2 text-sm text-left text-red-400 hover:bg-red-500/10 flex items-center gap-2 transition-colors"
+                role="menuitem"
+                disabled={!onClearChat || !canClearChat}
+                onClick={() => closeMenuAndRun(onClearChat)}
+                className="w-full px-4 py-2 text-sm text-left text-red-400 hover:bg-red-500/10 flex items-center gap-2 transition-colors disabled:opacity-50"
               >
                 <Trash2 className="w-4 h-4" /> Clear Chat
               </button>
