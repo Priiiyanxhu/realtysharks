@@ -16,6 +16,11 @@ interface ChatAreaProps {
   onSendMessage: (content: string) => Promise<boolean | void> | boolean | void;
   errorMessage?: string | null;
   onDismissError?: () => void;
+  /** True when the signed-in user has blocked the other broker. */
+  isPartnerBlocked?: boolean;
+  blockPending?: boolean;
+  onRequestBlock?: () => void;
+  onUnblock?: () => void;
   onBackToMobileList: () => void;
   isVisible: boolean;
 }
@@ -29,6 +34,10 @@ export function ChatArea({
   onSendMessage,
   errorMessage,
   onDismissError,
+  isPartnerBlocked = false,
+  blockPending = false,
+  onRequestBlock,
+  onUnblock,
   onBackToMobileList,
   isVisible
 }: ChatAreaProps) {
@@ -52,6 +61,10 @@ export function ChatArea({
             agentCompany={activeConversation.company}
             agentAvatar={activeConversation.avatar || undefined}
             propertyTitle={taggedListing?.title} 
+            isBlocked={isPartnerBlocked}
+            blockPending={blockPending}
+            onBlock={onRequestBlock}
+            onUnblock={onUnblock}
           />
           
           <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 flex flex-col">
@@ -111,7 +124,22 @@ export function ChatArea({
                 )}
               </div>
             )}
-            <ChatInput onSend={onSendMessage} />
+            {isPartnerBlocked ? (
+              <div className="p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm text-gray-400">
+                  You blocked {activeConversation.name}. Neither of you can send new messages until you unblock them.
+                </p>
+                <button
+                  onClick={onUnblock}
+                  disabled={blockPending || !onUnblock}
+                  className="shrink-0 rounded-full border border-white/15 px-5 py-2.5 text-sm font-medium text-white hover:bg-white/5 transition-colors disabled:opacity-50"
+                >
+                  {blockPending ? "Unblocking…" : `Unblock ${activeConversation.name}`}
+                </button>
+              </div>
+            ) : (
+              <ChatInput onSend={onSendMessage} />
+            )}
           </div>
         </>
       ) : (

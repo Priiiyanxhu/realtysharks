@@ -9,9 +9,11 @@ interface ConversationListProps {
   activeChat: string | null;
   onSelectChat: (id: string) => void;
   isVisible: boolean;
+  /** Partner ids the signed-in user has blocked; their rows get a "Blocked" tag. */
+  blockedPartnerIds?: Set<string>;
 }
 
-export function ConversationList({ conversations, activeChat, onSelectChat, isVisible }: ConversationListProps) {
+export function ConversationList({ conversations, activeChat, onSelectChat, isVisible, blockedPartnerIds }: ConversationListProps) {
   return (
     <div 
       className={cn(
@@ -55,7 +57,14 @@ export function ConversationList({ conversations, activeChat, onSelectChat, isVi
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-center mb-0.5">
-                  <h4 className="font-semibold text-white truncate pr-2">{chat.name}</h4>
+                  <h4 className="font-semibold text-white truncate pr-2">
+                    {chat.name}
+                    {blockedPartnerIds?.has(chat.partnerId) && (
+                      <span className="ml-2 rounded-full border border-red-500/30 bg-red-500/10 px-1.5 py-0.5 align-middle text-[9px] font-semibold uppercase tracking-wider text-red-300">
+                        Blocked
+                      </span>
+                    )}
+                  </h4>
                   <span className={cn("text-xs flex-shrink-0", chat.unread > 0 ? "text-[#D4AF37] font-medium" : "text-gray-500")}>
                     {chat.time}
                   </span>

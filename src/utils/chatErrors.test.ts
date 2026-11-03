@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { describeStartChatError, describeSendError } from "./chatErrors.ts";
+import { describeStartChatError, describeSendError, describeBlockError } from "./chatErrors.ts";
 
 /**
  * (SQLSTATE, message) pairs exactly as the database raises them. Captured by
@@ -115,6 +115,42 @@ describe("fallbacks", () => {
       const result = describeSendError(input);
       assert.equal(result.kind, "unknown");
       assert.match(result.message, /try again/i);
+    }
+  });
+});
+
+describe("describeBlockError", () => {
+  it("treats blocking someone you already blocked (23505) as success", () => {
+    const result = describeBlockError({ code: "23505", message: "duplicate key value violates unique constraint" }, "block");
+    assert.equal(result.alreadyDone, true);
+  });
+
+  it("does not treat a unique violation as success when unblocking", () => {
+    assert.equal(describeBlockError({ code: "23505", message: "x" }, "unblock").alreadyDone, false);
+  });
+
+  it("explains a vanished account when blocking (23503)", () => {
+    const result = describeBlockError({ code: "23503", message: "violates foreign key constraint" }, "block");
+    assert.equal(result.alreadyDone, false);
+    assert.match(result.message, /no longer available/);
+  });
+
+  it("recognises an expired session for both actions", () => {
+    for (const action of ["block", "unblock"] as const) {
+      const result = describeBlockError({ code: "PGRST301", message: "JWT expired" }, action);
+      assert.match(result.message, /session has expired/i);
+    }
+  });
+
+  it("falls back to an action-specific retryable message", () => {
+    assert.match(describeBlockError({ message: "Failed to fetch" }, "block").message, /couldn't block.*try again/i);
+    assert.match(describeBlockError(null, "unblock").message, /couldn't unblock.*try again/i);
+  });
+
+  it("never leaks database text or codes", () => {
+    for (const action of ["block", "unblock"] as const) {
+      const message = describeBlockError({ code: "42501", message: 'new row violates row-level security policy for table "user_blocks"' }, action).message;
+      assert.doesNotMatch(message, /row-level|violates|42501|user_blocks|policy/i);
     }
   });
 });

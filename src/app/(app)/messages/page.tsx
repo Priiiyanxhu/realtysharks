@@ -6,6 +6,8 @@ import { supabase } from "@/utils/supabase/client";
 
 import { useMessages } from "@/hooks/useMessages";
 import { useConversations } from "@/hooks/useConversations";
+import { useBlocks } from "@/hooks/useBlocks";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { ConversationList } from "@/components/chat/ConversationList";
 import { ChatArea } from "@/components/chat/ChatArea";
 
@@ -18,6 +20,8 @@ function MessagingEngine() {
   const [userId, setUserId] = useState<string | null>(null);
   const [taggedListing, setTaggedListing] = useState<{ id: string, title: string, price: string, location: string } | null>(null);
   const [chatError, setChatError] = useState<string | null>(null);
+  const [blockDialog, setBlockDialog] = useState<{ partnerId: string; name: string } | null>(null);
+  const [blockDialogError, setBlockDialogError] = useState<string | null>(null);
 
   // Initialize Session
   useEffect(() => {
@@ -32,6 +36,7 @@ function MessagingEngine() {
   const { allMessages, markMessagesAsRead, sendMessage } = useMessages(userId, activeChat);
   const urlBrokerId = searchParams.get('brokerId');
   const { conversations, getOrCreateConversation } = useConversations(userId, allMessages, activeChat, urlBrokerId);
+  const { blockedIds, pendingIds, block, unblock } = useBlocks(userId);
 
   // Derive active messages and mark as read
   const messages = useMemo(() => {
@@ -88,6 +93,32 @@ function MessagingEngine() {
   };
 
   const activeConversation = conversations.find(c => c.id === activeChat);
+  const activePartnerId = activeConversation?.partnerId ?? null;
+  const isPartnerBlocked = activePartnerId ? blockedIds.has(activePartnerId) : false;
+  const isBlockPending = activePartnerId ? pendingIds.has(activePartnerId) : false;
+
+  const handleRequestBlock = () => {
+    if (!activeConversation) return;
+    setBlockDialogError(null);
+    setBlockDialog({ partnerId: activeConversation.partnerId, name: activeConversation.name });
+  };
+
+  const handleConfirmBlock = async () => {
+    if (!blockDialog) return;
+    const result = await block(blockDialog.partnerId);
+    if (result.ok) {
+      setBlockDialog(null);
+      setChatError(null);
+    } else {
+      setBlockDialogError(result.error);
+    }
+  };
+
+  const handleUnblock = async () => {
+    if (!activePartnerId) return;
+    const result = await unblock(activePartnerId);
+    if (!result.ok) setChatError(result.error);
+  };
 
   // Resolves true when the message was sent, false when it was not, so the
   // input can hand the text back to the user instead of losing it.
@@ -132,6 +163,7 @@ function MessagingEngine() {
         activeChat={activeChat} 
         onSelectChat={handleSelectChat} 
         isVisible={isMobileListVisible} 
+        blockedPartnerIds={blockedIds}
       />
       <ChatArea 
         activeConversation={activeConversation}
@@ -142,8 +174,31 @@ function MessagingEngine() {
         onSendMessage={handleSendMessage}
         errorMessage={chatError}
         onDismissError={() => setChatError(null)}
+        isPartnerBlocked={isPartnerBlocked}
+        blockPending={isBlockPending}
+        onRequestBlock={handleRequestBlock}
+        onUnblock={handleUnblock}
         onBackToMobileList={() => setIsMobileListVisible(true)}
         isVisible={isMobileListVisible}
+      />
+      <ConfirmDialog
+        open={blockDialog !== null}
+        tone="danger"
+        title={blockDialog ? `Block ${blockDialog.name}?` : "Block this broker?"}
+        description={
+          <>
+            <p>
+              Neither of you will be able to send new messages, and they won&apos;t be able to start a new
+              conversation with you. Your existing messages stay visible.
+            </p>
+            <p className="mt-2">They won&apos;t be told you blocked them. You can unblock them any time.</p>
+          </>
+        }
+        confirmLabel="Block"
+        busy={blockDialog ? pendingIds.has(blockDialog.partnerId) : false}
+        errorMessage={blockDialogError}
+        onConfirm={handleConfirmBlock}
+        onCancel={() => setBlockDialog(null)}
       />
     </div>
   );

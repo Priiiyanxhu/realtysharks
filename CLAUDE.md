@@ -20,7 +20,7 @@ Mobile-first B2B real-estate network for Indian brokers, channel partners, devel
 
 - **Trust columns:** `verified`, `is_verified`, `kyc_status` and `auth_id` on `profiles` are writable only by `service_role`/`postgres` (trigger). Clients may only reset `kyc_status` to `'pending'`. No admin review flow exists, so nobody becomes verified yet; build it server-side with the service-role key.
 - **`requirements.privacy_level`:** `Standard` (or NULL) is fully visible. Anything else is **masked** for non-owners in `requirements_feed`: `funding_status`, `purchase_purpose`, `preferred_localities`, `client_profile`, `details` return NULL. Add any new client-identifying column to the view's mask list.
-- **Chat creation:** both users onboarded (`profiles.onboarded`), no block either way, and 20 new conversations per caller per rolling 24h (constant in the RPC). Blocks (`user_blocks`) also stop new messages in existing chats. Reopening an existing chat is always allowed.
+- **Chat creation:** both users onboarded (`profiles.onboarded`), no block either way, and 20 new conversations per caller per rolling 24h (constant in the RPC). Blocks (`user_blocks`) also stop new messages in existing chats. UI: block/unblock from the chat header menu and an unblock list on the profile page (`useBlocks`, `ConfirmDialog`, `BlockedBrokersPanel`); a blocked person must never be shown that they are blocked. Reopening an existing chat is always allowed.
 - **Storage deletes:** remove files through the Storage API. `DELETE FROM storage.objects` leaves the real file in the object store. Orphan cleanup: `scripts/cleanup-orphaned-avatars.mjs` (dry run by default; header documents usage and its service-role requirement).
 
 ## Migrations and database tests
@@ -46,7 +46,8 @@ Institutional, understated, trustworthy: Midnight Slate + Champagne Gold (tokens
 
 - `requirements.broker_id` references `auth.users` in migrations, yet the code embeds `profiles!requirements_broker_id_fkey`. Confirm the live FK before touching either. The same embeds through `requirements_feed` are unverified against PostgREST.
 - `MarketSphere` reads the legacy `listings.location` column that new listings never fill, so the globe shows demo data.
-- No UI to block or unblock a user; `user_blocks` is API-only.
+- Chat header menu items View Profile, Report User and Clear Chat are placeholder `alert()`s (Block/Unblock is real).
+- `src/app/layout.tsx` ambient glow (`right-[-10%]`) makes every page ~128px wider than the viewport, so pages scroll sideways; clip it with `overflow-x-clip` on the body or the glow's container.
 - Profile page: a failed avatar/cover upload is silent, and 9 `alert()` calls remain.
 - `src/utils/supabase/client.ts` logs debug lines; no `capacitor.config` is committed (native builds are not reproducible); `fix_blue.py`/`fix_emerald.py` are one-off scripts.
 

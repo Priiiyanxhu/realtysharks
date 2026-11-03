@@ -73,3 +73,32 @@ export function describeSendError(error: RawError): ChatErrorInfo {
   if (code === "42501") return { kind: "send_rejected", message: COPY.send_rejected };
   return { kind: "unknown", message: "Your message couldn't be sent. Please try again." };
 }
+
+export type BlockAction = "block" | "unblock";
+
+/**
+ * Errors from inserting into / deleting from public.user_blocks.
+ * `alreadyDone` is true when the database says the requested state already
+ * holds (blocking someone you already blocked: unique violation 23505), so
+ * callers can treat it as success instead of showing an error.
+ */
+export function describeBlockError(
+  error: RawError,
+  action: BlockAction
+): { message: string; alreadyDone: boolean } {
+  const code = error?.code ?? "";
+  const text = (error?.message ?? "").toLowerCase();
+
+  if (action === "block" && code === "23505") return { message: "", alreadyDone: true };
+  if (isSignedOut(code, text)) return { message: COPY.signed_out, alreadyDone: false };
+  if (action === "block" && code === "23503") {
+    return { message: "This broker's account is no longer available.", alreadyDone: false };
+  }
+  return {
+    message:
+      action === "block"
+        ? "We couldn't block this broker. Please try again."
+        : "We couldn't unblock this broker. Please try again.",
+    alreadyDone: false,
+  };
+}

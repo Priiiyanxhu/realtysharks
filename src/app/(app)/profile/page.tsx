@@ -7,6 +7,7 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { User, Building, Phone, Save, Plus, BadgeCheck, UploadCloud, Image as ImageIcon, Briefcase, FileText, ShieldAlert, Star } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { BlockedBrokersPanel } from "@/components/profile/BlockedBrokersPanel";
 import {
   uploadProfileImage,
   removeSupersededProfileImages,
@@ -461,6 +462,8 @@ export default function ProfilePage() {
               </button>
             </form>
           </GlassCard>
+
+          <BlockedBrokersPanel userId={profile?.id ?? null} />
         </div>
 
         {/* Right Side: Portfolio Management */}
