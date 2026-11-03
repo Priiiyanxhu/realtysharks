@@ -28,7 +28,7 @@ Security hardening before closed beta.
 - Chat RLS, RPC-only conversation creation, onboarding gate, daily cap, blocks, mapped chat error messages, block/unblock UI
 - Per-conversation realtime subscriptions; GlobalNotification stubbed on purpose
 - Orphaned avatar detection + cleanup script; old avatar deleted on upload
-- Sideways overflow clipped; sticky bars stick; fixed sidebar and phone tab bar are truly fixed (opacity-only template); chat screen ends above the phone tab bar
+- Sideways overflow clipped and the root glows' blank scroll tail removed (pages end at their content); sticky bars stick; fixed sidebar and phone tab bar are truly fixed (opacity-only template); chat screen ends above the phone tab bar
 - CI workflow (typecheck, lint ratchet, unit tests, build, migration replay + pgTAP)
 - MarketSphere viewport and reduced-motion optimization
 
@@ -36,14 +36,13 @@ Security hardening before closed beta.
 
 1. Owner reviews and applies the pending migrations in order (see CLAUDE.md, "Migrations and database tests")
 2. Verify PostgREST embeds through requirements_feed on staging before the owner-only requirements migration
-3. Clip the root glows' vertical overhang: every page has a blank scroll tail of 10% of its height (CLAUDE.md, "Known gaps")
-4. Replace placeholder chat menu actions (View Profile, Report User, Clear Chat) and consider a block entry point on broker profile pages
-5. Per-user rate limit on /api/ai-autowrite
-6. Admin KYC review (server-side, service_role) so brokers can become verified
-7. Confirm the live requirements foreign key matches the code (see CLAUDE.md, "Known gaps")
-8. Real search and filters (listings feed is wired; verify the rest)
-9. Confirm the CI database job is green on GitHub, require "CI passed" in branch protection, and reduce lint debt (lower .github/lint-baseline.json as it falls)
-10. Closed-beta workflow testing
+3. Replace placeholder chat menu actions (View Profile, Report User, Clear Chat) and consider a block entry point on broker profile pages
+4. Per-user rate limit on /api/ai-autowrite
+5. Admin KYC review (server-side, service_role) so brokers can become verified
+6. Confirm the live requirements foreign key matches the code (see CLAUDE.md, "Known gaps")
+7. Real search and filters (listings feed is wired; verify the rest)
+8. Confirm the CI database job is green on GitHub, require "CI passed" in branch protection, and reduce lint debt (lower .github/lint-baseline.json as it falls)
+9. Closed-beta workflow testing
 
 ## Security rules
 

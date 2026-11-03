@@ -44,6 +44,8 @@ Institutional, understated, trustworthy: Midnight Slate + Champagne Gold (tokens
 
 **Fixed elements.** The desktop sidebar, the phone tab bar and overlays are `position: fixed`. Never put a `transform`, `filter`, `backdrop-filter`, `perspective` or `contain` on an ancestor of one: that ancestor becomes the containing block and the element stops being fixed (it scrolls with the page, and a phone tab bar ends up off-screen on tall pages). `src/app/template.tsx` wraps the whole shell, so it animates opacity only. Animate rise or blur inside GlobalLayout's `<main>` instead.
 
+**Decoration that overhangs.** Absolutely positioned decoration with negative offsets (`bottom-[-10%]`, `right-[-10%]`) adds scrollable overflow: the root glows once made every page scroll 10% past its content. Keep such decoration in its own `absolute inset-0 overflow-hidden pointer-events-none` layer (`overflow-hidden` is fine there because it holds no content); see the glows in `src/app/layout.tsx`.
+
 **Phone tab bar.** It covers the bottom 100px plus the safe area, and `GlobalLayout`'s `<main>` reserves that space. A full-height screen must end above it, as Messages does with `h-[calc(100dvh_-_100px_-_env(safe-area-inset-bottom))] md:h-[100dvh]`; otherwise the bar covers the screen's bottom controls (it covered the chat composer).
 
 ## Known gaps
@@ -51,7 +53,6 @@ Institutional, understated, trustworthy: Midnight Slate + Champagne Gold (tokens
 - `requirements.broker_id` references `auth.users` in migrations, yet the code embeds `profiles!requirements_broker_id_fkey`. Confirm the live FK before touching either. The same embeds through `requirements_feed` are unverified against PostgREST.
 - `MarketSphere` reads the legacy `listings.location` column that new listings never fill, so the globe shows demo data.
 - Chat header menu items View Profile, Report User and Clear Chat are placeholder `alert()`s (Block/Unblock is real).
-- **Blank scroll tail on every page.** The root-layout glows in `src/app/layout.tsx` use `bottom-[-10%]`, so each page scrolls exactly 10% further than its content (80px on a short page, 766px on the phone Listings page). Put the two glows in their own `absolute inset-0 overflow-hidden pointer-events-none` layer. (The horizontal overhang is already clipped by the wrapper's `overflow-x-clip`.)
 - `QuickActionsPanel` (`src/components/dashboard/`) is unused.
 - Profile page: a failed avatar/cover upload is silent, and 9 `alert()` calls remain.
 - `src/utils/supabase/client.ts` logs debug lines; no `capacitor.config` is committed (native builds are not reproducible); `fix_blue.py`/`fix_emerald.py` are one-off scripts.
