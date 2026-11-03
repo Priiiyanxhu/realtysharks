@@ -218,14 +218,8 @@ function MessagingEngine() {
   // On phones the fixed tab bar sits over the bottom of the screen and GlobalLayout's
   // <main> reserves 100px + safe area for it, so this full-height screen ends above it
   // (otherwise the composer is covered). From md up the tab bar is a sidebar.
-  //
-  // `w-0 min-w-full` rather than `w-full`: GlobalLayout's <main> is a flex item whose
-  // minimum width is its content's, so a long message preview (the list truncates with
-  // nowrap) or an unbroken message body would stretch <main> past the screen and push
-  // the menu, Send button and time stamps off it. A zero-width box that is at least
-  // 100% wide contributes nothing to that minimum yet still fills the screen.
   return (
-    <div className="flex w-0 min-w-full h-[calc(100dvh_-_100px_-_env(safe-area-inset-bottom))] md:h-[100dvh] pt-[calc(env(safe-area-inset-top)+1rem)]">
+    <div className="flex w-full h-[calc(100dvh_-_100px_-_env(safe-area-inset-bottom))] md:h-[100dvh] pt-[calc(env(safe-area-inset-top)+1rem)]">
       <ConversationList 
         conversations={conversations} 
         activeChat={activeChat} 

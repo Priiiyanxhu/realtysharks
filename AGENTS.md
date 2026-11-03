@@ -36,6 +36,7 @@ Security hardening before closed beta.
 - Chat header "View Listing" bar is a real link (id validated); tagged-listing titles can no longer push chat controls off-screen on phones
 - Chat "Inquiry Context" card in message bubbles is a real link (same id validation); its long values wrap inside the bubble
 - Long or unbroken chat messages (pasted URLs, 200-character strings, long previews) no longer push the header menu, Send button or list time stamps off the screen
+- `<main>` has `min-w-0`: no page can be stretched past the screen by long unbreakable content; the `/dashboard`, `/network` and `/network/[id]` tablet overflows are gone (broker profile header now stacks below 1024px)
 
 ## Current priorities
 

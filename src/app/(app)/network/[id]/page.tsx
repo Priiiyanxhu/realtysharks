@@ -97,7 +97,7 @@ export default function PublicBrokerProfile() {
         <GlassCard className="p-8 md:p-10 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-[#D4AF37]/10 to-transparent" />
           
-          <div className="relative z-10 flex flex-col md:flex-row items-center md:items-start gap-8">
+          <div className="relative z-10 flex flex-col lg:flex-row items-center lg:items-start gap-8">
             <div className="relative w-32 h-32 rounded-full bg-slate-800 border-4 border-[#0a0f16] shadow-xl overflow-hidden shrink-0">
               {profile.avatar_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -114,18 +114,18 @@ export default function PublicBrokerProfile() {
               )}
             </div>
 
-            <div className="flex-1 text-center md:text-left space-y-4">
+            <div className="flex-1 text-center lg:text-left space-y-4">
               <div>
-                <h1 className="text-3xl font-black text-white tracking-tighter flex items-center justify-center md:justify-start gap-2">
+                <h1 className="text-3xl font-black text-white tracking-tighter flex items-center justify-center lg:justify-start gap-2">
                   {profile.full_name}
                   {profile.rera_number && <ShieldCheck className="w-5 h-5 text-[#D4AF37]" />}
                 </h1>
-                <p className="text-[#D4AF37] font-bold mt-1 flex items-center justify-center md:justify-start gap-1.5 text-xs uppercase tracking-widest">
+                <p className="text-[#D4AF37] font-bold mt-1 flex items-center justify-center lg:justify-start gap-1.5 text-xs uppercase tracking-widest">
                   <Briefcase className="w-4 h-4" /> {profile.agency_name}
                 </p>
               </div>
 
-              <div className="flex flex-wrap justify-center md:justify-start gap-3">
+              <div className="flex flex-wrap justify-center lg:justify-start gap-3">
                 <span className="text-sm text-white/70 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10 uppercase tracking-wide">
                   {profile.role || "Broker"}
                 </span>

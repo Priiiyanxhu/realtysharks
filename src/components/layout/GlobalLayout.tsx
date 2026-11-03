@@ -150,8 +150,10 @@ export function GlobalLayout({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <main className="flex-1 md:ml-72 relative pb-[calc(100px+env(safe-area-inset-bottom))] md:pb-0">
+      {/* Main Content Area. min-w-0: as a flex item <main> would otherwise grow to its content's minimum
+          width, so one long nowrap line or unbroken word stretches the page past the screen and pushes
+          controls off it (overflow-x-clip hides the overflow instead of showing a scrollbar). */}
+      <main className="flex-1 min-w-0 md:ml-72 relative pb-[calc(100px+env(safe-area-inset-bottom))] md:pb-0">
         {children}
       </main>
 
