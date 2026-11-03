@@ -37,6 +37,9 @@ export default function PostListingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState("");
   const [error, setError] = useState<string | null>(null);
+  // Shown right under the AI button: the form-level `error` sits far above/below it on a long form,
+  // so a rate-limit or generation failure would otherwise look like a button that did nothing.
+  const [aiError, setAiError] = useState<string | null>(null);
 
   // Fetch listing if editing
   useEffect(() => {
@@ -63,12 +66,13 @@ export default function PostListingPage() {
 
   const generateAiDescription = async () => {
     if (!propertyType || !location || !price) {
-      setError("Please fill out Property Type, Location, and Price before generating AI text.");
+      setAiError("Please fill out Property Type, Location, and Price before generating AI text.");
       return;
     }
     
     setIsAiLoading(true);
     setError(null);
+    setAiError(null);
     try {
       const prompt = `Write a highly specific, unique, and professional description for a property LISTING.
       Details provided by the broker:
@@ -91,7 +95,7 @@ export default function PostListingPage() {
       setDescription(data.description);
       setIsAiGenerated(true);
     } catch (err) {
-      setError((err instanceof Error ? (err instanceof Error ? err.message : String(err)) : String(err)) || "Failed to generate AI description");
+      setAiError((err instanceof Error ? (err instanceof Error ? err.message : String(err)) : String(err)) || "Failed to generate AI description");
     } finally {
       setIsAiLoading(false);
     }
@@ -326,6 +330,11 @@ export default function PostListingPage() {
                   {isAiLoading ? "Generating..." : "Generate AI Description"}
                 </button>
               </div>
+              {aiError && (
+                <p role="alert" className="text-right text-sm text-red-400">
+                  {aiError}
+                </p>
+              )}
 
               <div className="space-y-2">
                 <label className="text-xs uppercase tracking-wider text-gray-500 font-semibold ml-1">Property Description</label>

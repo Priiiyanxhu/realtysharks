@@ -42,6 +42,9 @@ export default function PostRequirementPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState("");
   const [error, setError] = useState<string | null>(null);
+  // Shown right under the AI button: the form-level `error` sits far above/below it on a long form,
+  // so a rate-limit or generation failure would otherwise look like a button that did nothing.
+  const [aiError, setAiError] = useState<string | null>(null);
 
   // Fetch requirement if editing
   useEffect(() => {
@@ -73,12 +76,13 @@ export default function PostRequirementPage() {
 
   const generateAiDescription = async () => {
     if (!propertyType || !location || !price) {
-      setError("Please fill in Property Type, City, and Budget to generate a description.");
+      setAiError("Please fill in Property Type, City, and Budget to generate a description.");
       return;
     }
     
     setIsAiLoading(true);
     setError(null);
+    setAiError(null);
     try {
       const prompt = `Write a highly personalized, unique, and professional summary for a real estate buyer requirement. 
       Details strictly provided by the buyer broker:
@@ -111,7 +115,7 @@ export default function PostRequirementPage() {
       setDescription(data.description);
       setIsAiGenerated(true);
     } catch (err) {
-      setError((err instanceof Error ? (err instanceof Error ? err.message : String(err)) : String(err)) || "Failed to generate AI description");
+      setAiError((err instanceof Error ? (err instanceof Error ? err.message : String(err)) : String(err)) || "Failed to generate AI description");
     } finally {
       setIsAiLoading(false);
     }
@@ -369,6 +373,11 @@ export default function PostRequirementPage() {
                   {isAiLoading ? "Generating..." : "Generate AI Summary"}
                 </button>
               </div>
+              {aiError && (
+                <p role="alert" className="text-right text-sm text-red-400">
+                  {aiError}
+                </p>
+              )}
 
               <div className="space-y-2">
                 <label className="text-xs uppercase tracking-wider text-gray-500 font-semibold ml-1">Requirement Details</label>

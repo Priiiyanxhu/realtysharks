@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
-import { getVerifiedUserId } from '@/utils/supabase/server';
+import { createSupabaseServerClient, getVerifiedUserId } from '@/utils/supabase/server';
+import { interpretQuotaResult } from '@/utils/aiQuota';
 
 const MAX_PROMPT_LENGTH = 4000;
 
@@ -25,8 +26,26 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Prompt is too long' }, { status: 413 });
   }
 
-  try {
+  // Spend a unit of quota only for a request that is otherwise valid, and before
+  // the paid call. Identity comes from the caller's own session (auth.uid() in the
+  // database), so there is nothing to forge and no service-role key is needed.
+  // Fails closed: if the quota cannot be checked, Gemini is not called.
+  const supabase = await createSupabaseServerClient();
+  const { data: quotaData, error: quotaError } = await supabase.rpc('consume_ai_quota');
+  const quota = interpretQuotaResult(quotaData, quotaError);
 
+  if (quota.kind === 'unavailable') {
+    console.error('AI quota check failed.', { code: quotaError?.code });
+    return NextResponse.json({ error: quota.message }, { status: quota.status });
+  }
+  if (quota.kind === 'limited') {
+    return NextResponse.json(
+      { error: quota.message, retryAfterSeconds: quota.retryAfterSeconds },
+      { status: quota.status, headers: { 'Retry-After': String(quota.retryAfterSeconds) } }
+    );
+  }
+
+  try {
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
     
     const systemPrompt = `
