@@ -72,6 +72,15 @@ describe("the dev-only list stays honest", () => {
     assert.equal(routeExists("/definitely-not-a-route"), false);
   });
 
+  it("the app has its own not-found page, which is what the gate's rewrite renders", () => {
+    const file = path.join(SRC, "app", "not-found.tsx");
+    assert.equal(fs.existsSync(file), true, "src/app/not-found.tsx is missing: dev-only routes would show Next's default 404");
+    const text = fs.readFileSync(file, "utf8");
+    assert.match(text, /export default function/);
+    assert.match(text, /Page not found/);
+    assert.match(text, /href="\/dashboard"/, "the 404 must offer a way back into the app");
+  });
+
   it("the proxy applies the gate before it does anything else", () => {
     const proxy = fs.readFileSync(path.join(SRC, "proxy.ts"), "utf8");
     assert.match(proxy, /isBlockedInThisEnv\(/);
