@@ -258,8 +258,10 @@ export default function ListingDetailsPage() {
                   <MessageSquare className="w-5 h-5" />
                   Request Direct Mandate
                 </button>
+                {/* Keep to what is true: no phone/email is shown, and other brokers cannot read the chat (RLS).
+                    Do not promise confidentiality: whoever operates the database can read messages. */}
                 <p className="text-[10px] text-white/40 uppercase tracking-widest mt-4">
-                  Strictly Confidential • In-App Messaging Only
+                  Private • In-App Messaging Only
                 </p>
               </div>
             </GlassCard>
