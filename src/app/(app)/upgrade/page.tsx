@@ -26,8 +26,7 @@ export default function UpgradePage() {
     "Unlimited Premium Leads",
     "Expert Negotiation Assistance",
     "Instant AI Property Matching",
-    "Exclusive Off-Market Project Reach",
-    "Verified Premium Badge"
+    "Exclusive Off-Market Project Reach"
   ];
 
   return (

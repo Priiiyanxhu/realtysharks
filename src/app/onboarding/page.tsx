@@ -217,8 +217,8 @@ export default function OnboardingPage() {
           {step === 3 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div className="text-center">
-                <h2 className="text-2xl font-bold text-white mb-2">Identity Verification</h2>
-                <p className="text-gray-400 text-sm">Upload Aadhar, PAN, or Business Card for the Private KYC Vault.</p>
+                <h2 className="text-2xl font-bold text-white mb-2">KYC Documents</h2>
+                <p className="text-gray-400 text-sm">Upload Aadhar, PAN, or Business Card for the Private KYC Vault. Uploading a document does not verify you automatically.</p>
               </div>
 
               <div className="border-2 border-dashed border-white/20 rounded-3xl p-10 flex flex-col items-center justify-center text-center bg-white/5 hover:bg-white/10 transition-colors cursor-pointer relative">
@@ -256,7 +256,7 @@ export default function OnboardingPage() {
             </PremiumButton>
           ) : (
             <PremiumButton onClick={handleSubmit} disabled={loading}>
-              {loading ? "Verifying..." : (kycFile ? "Complete Setup" : "Skip & Complete")}
+              {loading ? "Saving..." : (kycFile ? "Complete Setup" : "Skip & Complete")}
             </PremiumButton>
           )}
         </div>

@@ -53,7 +53,7 @@ export default function NetworkPage() {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <h1 className="text-3xl font-light text-white tracking-tight">Broker <span className="font-semibold">Network</span></h1>
-            <p className="text-white/50 mt-2">Connect with verified institutional brokers across India.</p>
+            <p className="text-white/50 mt-2">Connect with institutional brokers across India.</p>
           </div>
           
           <div className="flex gap-4 w-full md:w-auto">

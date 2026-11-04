@@ -44,6 +44,7 @@ Security hardening before closed beta.
 - Empty-chat copy no longer claims end-to-end encryption (it is false: chat is plain text under RLS); a unit test guards against the claim returning
 - Listing contact card no longer says "Strictly Confidential" (it says "Private • In-App Messaging Only")
 - Verified badges are real: shown only when `profiles.verified` is true (`isVerifiedBroker`), never from a RERA number, a match score or a default; the profile hint and PDF flyer fallbacks no longer say "Verified". Until admin KYC review (priority 4) sets `verified`, no broker shows a badge
+- Marketing and onboarding copy no longer claims verification nobody has earned: landing tagline, network subtitle, the Upgrade plans' "Verified Premium Badge" line; onboarding step 3 is "KYC Documents" (an upload does not verify you) and its busy button says "Saving..."
 
 ## Current priorities
 

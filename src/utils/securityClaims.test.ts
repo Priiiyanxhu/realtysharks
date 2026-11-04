@@ -37,6 +37,9 @@ describe("UI copy makes no false security claims", () => {
       [/isVerified=\{\s*true\s*\}/, "isVerified={true}"],
       [/isVerified=\{\s*!!/, "isVerified={!!...} (derived from a self-entered field)"],
       [/RERA Verified/i, '"RERA Verified" (a RERA number is self-entered and only format-checked)'],
+      // Marketing copy that claims verification nobody has earned (verified comes only from profiles.verified).
+      [/verified\s+(platform|institutional)/i, '"verified platform/institutional brokers"'],
+      [/Verified Premium Badge/i, '"Verified Premium Badge" (a badge cannot be bought)'],
     ];
     const offenders: string[] = [];
     for (const file of sourceFiles(SRC)) {
