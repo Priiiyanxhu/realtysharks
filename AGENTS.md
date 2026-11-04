@@ -47,6 +47,7 @@ Security hardening before closed beta.
 - Marketing and onboarding copy no longer claims verification nobody has earned: landing tagline, network subtitle, the Upgrade plans' "Verified Premium Badge" line; onboarding step 3 is "KYC Documents" (an upload does not verify you) and its busy button says "Saving..."
 - `/testbed` (component playground with a dummy "Verified" card) is dev-only: the proxy returns a real 404 for it, including path variants and signed-in users, in anything but `next dev`
 - Branded 404 page (`src/app/not-found.tsx`): the app's dark theme and wordmark, one heading, two ways back; real 404 status, `noindex`, 4.5:1+ contrast, 44px touch targets, no horizontal scroll from 320px
+- Branded 500 pages (`error.tsx`, `(app)/error.tsx`, `global-error.tsx`) on a shared `StatusScreen`: dark theme, "Try again" and "Go to dashboard", a copyable digest reference, and never the error message
 
 ## Current priorities
 
