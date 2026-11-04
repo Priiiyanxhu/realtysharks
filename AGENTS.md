@@ -51,12 +51,12 @@ Security hardening before closed beta.
 
 ## Current priorities
 
-1. Owner reviews and applies the pending migrations in order (see CLAUDE.md, "Migrations and database tests")
+1. Owner reviews and applies the pending migrations in order (see docs/backend.md, "Migrations and database tests")
 2. Verify PostgREST embeds through requirements_feed on staging before the owner-only requirements migration
 3. Admin review of `user_reports` (server-side, service_role; nothing reads them yet), and consider a block/report entry point on broker profile pages
 4. Admin KYC review (server-side, service_role) so brokers can become verified
 5. Blunt account farming (email confirmation or other signup friction): per-user limits, including AI writing, can be sidestepped with new accounts; the global AI cap is only the cost backstop
-6. Confirm the live requirements foreign key matches the code (see CLAUDE.md, "Known gaps")
+6. Confirm the live requirements foreign key matches the code (see docs/known-gaps.md)
 7. Real search and filters (listings feed is wired; verify the rest)
 8. Confirm the CI database job is green on GitHub, require "CI passed" in branch protection, and reduce lint debt (lower .github/lint-baseline.json as it falls)
 9. Closed-beta workflow testing

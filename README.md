@@ -5,7 +5,8 @@ Mobile-first B2B real-estate network for Indian brokers, channel partners, devel
 ## Start here
 
 - **Changing code?** Read [`AGENTS.md`](AGENTS.md) first: the security rules, required checks, workflow, what is done and the current priorities.
-- **Touching data, auth, chat or privacy?** Read [`CLAUDE.md`](CLAUDE.md): the architecture, the privacy model enforced in the database, gotchas and known gaps. The browser queries Postgres directly, so Row Level Security is the access control.
+- **Touching data, auth, chat or privacy?** Read [`CLAUDE.md`](CLAUDE.md) for the invariants, then [`docs/backend.md`](docs/backend.md): the access model, the privacy model enforced in the database, chat, the AI route and migrations. The browser queries Postgres directly, so Row Level Security is the access control.
+- **Changing pages, layout or routing?** Read [`docs/frontend.md`](docs/frontend.md): routing, the 404 and 500 screens, and the layout gotchas.
 - **Changing the database?** [`supabase/migrations/`](supabase/migrations) is the source of truth. Add a new forward-only migration; the owner reviews production SQL and applies it by hand.
 - **Writing Next.js code?** Next 16 has breaking changes. The reference is `node_modules/next/dist/docs/`.
 
@@ -40,4 +41,4 @@ The required checks are listed in [`AGENTS.md`](AGENTS.md). CI ([`.github/workfl
 - A lint ratchet against [`.github/lint-baseline.json`](.github/lint-baseline.json): lint is not clean, and the baseline falls as debt is paid.
 - The database suites: `npx supabase test db supabase/tests/database` (pgTAP, needs the local stack running).
 
-Known gaps, including unbuilt features and native (Capacitor) build setup, are tracked in [`CLAUDE.md`](CLAUDE.md).
+Known gaps, including unbuilt features and native (Capacitor) build setup, are tracked in [`docs/known-gaps.md`](docs/known-gaps.md).
