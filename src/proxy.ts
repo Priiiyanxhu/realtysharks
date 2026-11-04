@@ -1,8 +1,17 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { isBlockedInThisEnv } from "@/utils/devOnlyRoutes";
 
 export async function proxy(req: NextRequest) {
+  // Dev-only routes (e.g. /testbed, a component playground with dummy data) do not
+  // exist outside development: answer a real 404 before auth or rendering, even
+  // for signed-in users. Rewriting to a path that matches no route renders the
+  // app's standard not-found page with a 404 status.
+  if (isBlockedInThisEnv(req.nextUrl.pathname, process.env.NODE_ENV)) {
+    return NextResponse.rewrite(new URL("/dev-only-route-disabled", req.url));
+  }
+
   let res = NextResponse.next({
     request: {
       headers: req.headers,

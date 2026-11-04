@@ -45,6 +45,7 @@ Security hardening before closed beta.
 - Listing contact card no longer says "Strictly Confidential" (it says "Private • In-App Messaging Only")
 - Verified badges are real: shown only when `profiles.verified` is true (`isVerifiedBroker`), never from a RERA number, a match score or a default; the profile hint and PDF flyer fallbacks no longer say "Verified". Until admin KYC review (priority 4) sets `verified`, no broker shows a badge
 - Marketing and onboarding copy no longer claims verification nobody has earned: landing tagline, network subtitle, the Upgrade plans' "Verified Premium Badge" line; onboarding step 3 is "KYC Documents" (an upload does not verify you) and its busy button says "Saving..."
+- `/testbed` (component playground with a dummy "Verified" card) is dev-only: the proxy returns a real 404 for it, including path variants and signed-in users, in anything but `next dev`
 
 ## Current priorities
 
