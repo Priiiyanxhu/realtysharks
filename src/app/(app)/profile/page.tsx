@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { User, Building, Phone, Save, Plus, BadgeCheck, UploadCloud, Image as ImageIcon, Briefcase, FileText, ShieldAlert, Star } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { BlockedBrokersPanel } from "@/components/profile/BlockedBrokersPanel";
+import { isVerifiedBroker } from "@/utils/verification";
 import {
   uploadProfileImage,
   removeSupersededProfileImages,
@@ -381,7 +382,7 @@ export default function ProfilePage() {
                   {reraError ? (
                     <p className="text-xs text-red-400 mt-1.5">{reraError}</p>
                   ) : (
-                    <p className="text-xs text-white/30 mt-1.5">Enter to unlock the &quot;Verified Broker&quot; badge.</p>
+                    <p className="text-xs text-white/30 mt-1.5">Entering a RERA number does not make you a verified broker; verification is a separate KYC review.</p>
                   )}
                 </div>
 
@@ -510,7 +511,7 @@ export default function ProfilePage() {
                       location={listing.city}
                       bhk={listing.configuration}
                       imageUrl={listing.images?.[0] || ""}
-                      isVerified={true}
+                      isVerified={isVerifiedBroker(profile)}
                       agent={{
                         name: profile.full_name,
                         company: profile.agency_name,

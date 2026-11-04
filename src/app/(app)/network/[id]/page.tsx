@@ -7,6 +7,7 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { PropertyCard } from "@/components/ui/PropertyCard";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { MapPin, ShieldCheck, Briefcase, MessageSquare } from "lucide-react";
+import { isVerifiedBroker } from "@/utils/verification";
 
 export default function PublicBrokerProfile() {
   const params = useParams();
@@ -111,8 +112,8 @@ export default function PublicBrokerProfile() {
                   {(profile.full_name || "B")[0]}
                 </div>
               )}
-              {profile.rera_number && (
-                <div className="absolute bottom-1 right-1 bg-[#D4AF37] rounded-full p-1.5 border-2 border-[#0a0f16]" title="RERA Verified">
+              {isVerifiedBroker(profile) && (
+                <div className="absolute bottom-1 right-1 bg-[#D4AF37] rounded-full p-1.5 border-2 border-[#0a0f16]" title="Verified broker">
                   <ShieldCheck className="w-4 h-4 text-[#0a0f16]" />
                 </div>
               )}
@@ -122,7 +123,7 @@ export default function PublicBrokerProfile() {
               <div>
                 <h1 className="text-3xl font-black text-white tracking-tighter flex items-center justify-center lg:justify-start gap-2">
                   {profile.full_name}
-                  {profile.rera_number && <ShieldCheck className="w-5 h-5 text-[#D4AF37]" />}
+                  {isVerifiedBroker(profile) && <ShieldCheck className="w-5 h-5 text-[#D4AF37]" />}
                 </h1>
                 <p className="text-[#D4AF37] font-bold mt-1 flex items-center justify-center lg:justify-start gap-1.5 text-xs uppercase tracking-widest">
                   <Briefcase className="w-4 h-4" /> {profile.agency_name}
@@ -193,7 +194,7 @@ export default function PublicBrokerProfile() {
                     location={listing.city}
                     bhk={listing.configuration}
                     imageUrl={listing.images?.[0] || ""}
-                    isVerified={!!profile.rera_number}
+                    isVerified={isVerifiedBroker(profile)}
                     agent={{
                       name: profile.full_name,
                       company: profile.agency_name,

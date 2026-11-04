@@ -8,6 +8,7 @@ import { MapPin, Bed, Maximize, ShieldCheck, Sparkles, MessageSquare, Clock, Arr
 import Image from "next/image";
 import { PremiumButton } from "@/components/ui/PremiumButton";
 import { GlassCard } from "@/components/ui/GlassCard";
+import { isVerifiedBroker } from "@/utils/verification";
 
 export default function ListingDetailsPage() {
   const { id } = useParams();
@@ -26,7 +27,7 @@ export default function ListingDetailsPage() {
           .from('listings')
           .select(`
             *,
-            profiles!listings_broker_id_fkey (id, full_name, agency_name, avatar_url)
+            profiles!listings_broker_id_fkey (id, full_name, agency_name, avatar_url, verified)
           `)
           .eq('id', id)
           .single();
@@ -153,10 +154,12 @@ export default function ListingDetailsPage() {
               transition={{ delay: 0.2 }}
               className="flex items-center gap-3 mb-4"
             >
-              <div className="bg-[#D4AF37]/20 backdrop-blur-md border border-[#D4AF37]/30 px-3 py-1.5 rounded-full flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-[#D4AF37]" />
-                <span className="text-[#D4AF37] text-xs font-bold uppercase tracking-widest">Verified Premium</span>
-              </div>
+              {isVerifiedBroker(broker) && (
+                <div className="bg-[#D4AF37]/20 backdrop-blur-md border border-[#D4AF37]/30 px-3 py-1.5 rounded-full flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-[#D4AF37]" />
+                  <span className="text-[#D4AF37] text-xs font-bold uppercase tracking-widest">Verified Broker</span>
+                </div>
+              )}
               <div className="bg-white/10 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-full flex items-center gap-2">
                 <Clock className="w-4 h-4 text-white/70" />
                 <span className="text-white/70 text-xs font-bold uppercase tracking-widest">{daysOnMarket} DOM</span>
@@ -242,9 +245,11 @@ export default function ListingDetailsPage() {
                     {broker?.full_name?.charAt(0) || "B"}
                   </div>
                 )}
-                <div className="absolute bottom-0 right-0 bg-[#D4AF37] rounded-full p-1 border-2 border-[#0B1120]">
-                  <ShieldCheck className="w-3 h-3 text-[#0B1120]" />
-                </div>
+                {isVerifiedBroker(broker) && (
+                  <div className="absolute bottom-0 right-0 bg-[#D4AF37] rounded-full p-1 border-2 border-[#0B1120]" title="Verified broker">
+                    <ShieldCheck className="w-3 h-3 text-[#0B1120]" />
+                  </div>
+                )}
               </div>
 
               <h3 className="text-xl font-semibold text-white mb-1">{broker?.full_name || "Listing Broker"}</h3>

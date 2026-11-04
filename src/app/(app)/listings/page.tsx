@@ -8,12 +8,14 @@ import { RequirementCard } from "@/components/listings/RequirementCard";
 import { SkeletonCard } from "@/components/ui/SkeletonCard";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { SearchX, RefreshCcw } from "lucide-react";
+import { isVerifiedBroker } from "@/utils/verification";
 
 type EmbeddedProfile = {
   id: string;
   full_name: string | null;
   agency_name: string | null;
   avatar_url: string | null;
+  verified?: boolean | null;
 };
 
 type EmbeddedProfileRelation = EmbeddedProfile | EmbeddedProfile[] | null;
@@ -123,7 +125,7 @@ export default function GlobalListingsPage() {
               images,
               is_active,
               created_at,
-              profiles!listings_broker_id_fkey (id, full_name, agency_name, avatar_url)
+              profiles!listings_broker_id_fkey (id, full_name, agency_name, avatar_url, verified)
             `)
             .eq("is_active", true)
             .order('created_at', { ascending: false })
@@ -333,6 +335,7 @@ export default function GlobalListingsPage() {
                     type={property.property_type || undefined}
                     bhk={property.configuration || "Configuration not specified"}
                     imageUrl={property.images?.[0] || ""}
+                    isVerified={isVerifiedBroker(profile)}
                     agent={{
                       id: profile?.id,
                       name: profile?.full_name || "Unknown Broker",

@@ -39,7 +39,7 @@ export function PropertyCard({
   location,
   bhk,
   imageUrl,
-  isVerified = true,
+  isVerified = false, // only ever true for a broker with profiles.verified (see isVerifiedBroker)
   directMandate = false,
   agent,
   onEdit,

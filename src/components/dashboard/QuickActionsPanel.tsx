@@ -6,8 +6,9 @@ import { PremiumButton } from "@/components/ui/PremiumButton";
 import { ShieldCheck, LogOut } from "lucide-react";
 import { supabase } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
+import { isVerifiedBroker } from "@/utils/verification";
 
-export function QuickActionsPanel({ profile }: { profile: { role?: string; full_name?: string; avatar_url?: string; agency_name?: string; activeListingsCount?: number; activeReqsCount?: number } | null }) {
+export function QuickActionsPanel({ profile }: { profile: { role?: string; full_name?: string; avatar_url?: string; verified?: boolean; agency_name?: string; activeListingsCount?: number; activeReqsCount?: number } | null }) {
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -29,10 +30,12 @@ export function QuickActionsPanel({ profile }: { profile: { role?: string; full_
               <div className="w-full h-full flex items-center justify-center text-white/50 text-xs">No Pic</div>
             )}
             
-            {/* Verified Badge Icon overlaid on avatar */}
-            <div className="absolute -bottom-1 -right-1 bg-[#10B981] rounded-full p-0.5 border-2 border-[#0a0f16]">
-              <ShieldCheck className="w-3 h-3 text-[#0a0f16]" />
-            </div>
+            {/* Verified badge overlaid on avatar: only for a broker with profiles.verified */}
+            {isVerifiedBroker(profile) && (
+              <div className="absolute -bottom-1 -right-1 bg-[#10B981] rounded-full p-0.5 border-2 border-[#0a0f16]" title="Verified broker">
+                <ShieldCheck className="w-3 h-3 text-[#0a0f16]" />
+              </div>
+            )}
           </div>
           
           <div className="flex flex-col min-w-0">

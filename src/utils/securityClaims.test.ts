@@ -29,6 +29,23 @@ describe("UI copy makes no false security claims", () => {
     assert.deepEqual(offenders.map((f) => path.relative(SRC, f)), [], "chat is not end-to-end encrypted; see this test's header");
   });
 
+  it("never shows a Verified badge that is not driven by profiles.verified", () => {
+    // Patterns that made every broker look verified: a default of true, a hard-coded true,
+    // and a badge derived from a self-entered RERA number. Use isVerifiedBroker() instead.
+    const forbidden: [RegExp, string][] = [
+      [/isVerified\s*=\s*true/, "isVerified defaulting to true"],
+      [/isVerified=\{\s*true\s*\}/, "isVerified={true}"],
+      [/isVerified=\{\s*!!/, "isVerified={!!...} (derived from a self-entered field)"],
+      [/RERA Verified/i, '"RERA Verified" (a RERA number is self-entered and only format-checked)'],
+    ];
+    const offenders: string[] = [];
+    for (const file of sourceFiles(SRC)) {
+      const text = fs.readFileSync(file, "utf8");
+      for (const [pattern, label] of forbidden) if (pattern.test(text)) offenders.push(`${path.relative(SRC, file)}: ${label}`);
+    }
+    assert.deepEqual(offenders, [], "badges must come from isVerifiedBroker(profile), i.e. profiles.verified");
+  });
+
   it("scans real source (the walk finds the chat component)", () => {
     assert.ok(sourceFiles(SRC).some((f) => f.endsWith(path.join("components", "chat", "ChatArea.tsx"))));
   });

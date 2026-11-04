@@ -73,7 +73,7 @@ export const generatePdfFlyer = async (listingId: string | number) => {
           <p style="margin: 5px 0 0 0; font-size: 14px; opacity: 0.8;">Exclusive Institutional Network</p>
         </div>
         <div style="text-align: right;">
-          <h2 style="margin: 0; font-size: 24px;">${escapeHtml(profile?.agency_name || 'Verified Broker')}</h2>
+          <h2 style="margin: 0; font-size: 24px;">${escapeHtml(profile?.agency_name || 'Independent')}</h2>
           <p style="margin: 5px 0 0 0; font-size: 14px; opacity: 0.8;">${escapeHtml(profile?.full_name || '')}</p>
         </div>
       </div>
@@ -130,7 +130,7 @@ export const generatePdfFlyer = async (listingId: string | number) => {
       <div style="position: absolute; bottom: 0; left: 0; right: 0; background-color: #f8f9fa; padding: 30px; border-top: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
         <div>
           <p style="margin: 0; font-size: 14px; color: #888;">Contact Broker</p>
-          <p style="margin: 5px 0 0 0; font-size: 18px; font-weight: bold;">${escapeHtml(profile?.full_name || 'Verified Broker')}</p>
+          <p style="margin: 5px 0 0 0; font-size: 18px; font-weight: bold;">${escapeHtml(profile?.full_name || 'Broker')}</p>
           <p style="margin: 5px 0 0 0; font-size: 16px; color: #555;">${escapeHtml(profile?.agency_name || '')}</p>
         </div>
         <div style="display: flex; align-items: center; gap: 15px;">

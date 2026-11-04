@@ -43,6 +43,7 @@ Security hardening before closed beta.
 - Dashboard columns: the Sphere and Network Feed stack full width until 1280px (feed text was 71px wide at 1024px and the Sphere title clipped); the Sphere canvas now covers its card at any width (14 widths, 320 to 1600px)
 - Empty-chat copy no longer claims end-to-end encryption (it is false: chat is plain text under RLS); a unit test guards against the claim returning
 - Listing contact card no longer says "Strictly Confidential" (it says "Private • In-App Messaging Only")
+- Verified badges are real: shown only when `profiles.verified` is true (`isVerifiedBroker`), never from a RERA number, a match score or a default; the profile hint and PDF flyer fallbacks no longer say "Verified". Until admin KYC review (priority 4) sets `verified`, no broker shows a badge
 
 ## Current priorities
 
