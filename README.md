@@ -2,6 +2,8 @@
 
 Mobile-first B2B real-estate network for Indian brokers, channel partners, developers, consultants and agents: post listings and buyer requirements, match them, and chat directly. Built with Next.js 16 (App Router), React 19, TypeScript, Tailwind v4 and Supabase (Postgres, Auth, Storage, Realtime), with Gemini for AI writing.
 
+**Status:** in development, preparing for a closed beta. There are no releases yet.
+
 ## Start here
 
 - **Changing code?** Read [`AGENTS.md`](AGENTS.md) first: the security rules, required checks, workflow, what is done and the current priorities.
@@ -42,3 +44,15 @@ The required checks are listed in [`AGENTS.md`](AGENTS.md). CI ([`.github/workfl
 - The database suites: `npx supabase test db supabase/tests/database` (pgTAP, needs the local stack running).
 
 Known gaps, including unbuilt features and native (Capacitor) build setup, are tracked in [`docs/known-gaps.md`](docs/known-gaps.md).
+
+## Contributing
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md). Everyone taking part follows the [Code of Conduct](CODE_OF_CONDUCT.md).
+
+## Security
+
+Report vulnerabilities privately, as described in [`SECURITY.md`](SECURITY.md).
+
+## Licence
+
+[GNU Affero General Public License v3.0](LICENSE) (`AGPL-3.0-only`). If you run a modified version as a network service, the licence requires you to offer its users the source of your version.
