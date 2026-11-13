@@ -49,29 +49,25 @@ UPDATE public.profiles
    SET avatar_url = 'https://other.example.co/storage/v1/render/image/public/avatars/00000000-0000-4000-8000-000000000584/avatar.png?t=123'
  WHERE id = '00000000-0000-4000-8000-000000000584';
 
-INSERT INTO storage.objects (bucket_id, name)
-VALUES
-  ('avatars', '00000000-0000-4000-8000-000000000581/avatar.png'),
-  ('avatars', '00000000-0000-4000-8000-000000000581/avatar.jpg'),
-  ('avatars', '00000000-0000-4000-8000-000000000581/avatar.webp'),
-  ('avatars', '00000000-0000-4000-8000-000000000581/cover.jpg'),
-  ('avatars', '00000000-0000-4000-8000-000000000581/cover.png'),
-  ('avatars', '00000000-0000-4000-8000-000000000581/.emptyFolderPlaceholder'),
-  ('avatars', '00000000-0000-4000-8000-000000000582/avatar.png'),
-  ('avatars', '00000000-0000-4000-8000-000000000583/avatar.png'),
-  ('avatars', '00000000-0000-4000-8000-000000000584/avatar.png'),
-  ('avatars', 'stray.png'),
-  ('listing-images', '00000000-0000-4000-8000-000000000581/photo.jpg');
-
--- Everything is three days old, except one fresh object.
-UPDATE storage.objects
-   SET created_at = pg_catalog.now() - interval '3 days',
-       updated_at = pg_catalog.now() - interval '3 days';
-
-UPDATE storage.objects
-   SET created_at = pg_catalog.now() - interval '1 hour',
-       updated_at = pg_catalog.now() - interval '1 hour'
- WHERE name = '00000000-0000-4000-8000-000000000581/avatar.webp';
+-- Timestamps are written by the INSERT itself: storage.objects has a BEFORE
+-- UPDATE trigger that resets updated_at to now(), so back-dating with a later
+-- UPDATE does nothing on a real Supabase database. Everything is three days
+-- old, except one object that is one hour old.
+INSERT INTO storage.objects (bucket_id, name, created_at, updated_at)
+SELECT bucket_id, name, pg_catalog.now() - age, pg_catalog.now() - age
+FROM (VALUES
+  ('avatars', '00000000-0000-4000-8000-000000000581/avatar.png', interval '3 days'),
+  ('avatars', '00000000-0000-4000-8000-000000000581/avatar.jpg', interval '3 days'),
+  ('avatars', '00000000-0000-4000-8000-000000000581/avatar.webp', interval '1 hour'),
+  ('avatars', '00000000-0000-4000-8000-000000000581/cover.jpg', interval '3 days'),
+  ('avatars', '00000000-0000-4000-8000-000000000581/cover.png', interval '3 days'),
+  ('avatars', '00000000-0000-4000-8000-000000000581/.emptyFolderPlaceholder', interval '3 days'),
+  ('avatars', '00000000-0000-4000-8000-000000000582/avatar.png', interval '3 days'),
+  ('avatars', '00000000-0000-4000-8000-000000000583/avatar.png', interval '3 days'),
+  ('avatars', '00000000-0000-4000-8000-000000000584/avatar.png', interval '3 days'),
+  ('avatars', 'stray.png', interval '3 days'),
+  ('listing-images', '00000000-0000-4000-8000-000000000581/photo.jpg', interval '3 days')
+) AS v(bucket_id, name, age);
 
 -- ---------------------------------------------------------------------------
 -- Client roles cannot call it at all
