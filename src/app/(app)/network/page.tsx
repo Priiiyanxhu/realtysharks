@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { supabase } from "@/utils/supabase/client";
 import { Search, MapPin, ShieldCheck, Briefcase } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { isVerifiedBroker } from "@/utils/verification";
 
 export default function NetworkPage() {
   const [profiles, setProfiles] = useState<any[]>([]);
@@ -52,7 +53,7 @@ export default function NetworkPage() {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <h1 className="text-3xl font-light text-white tracking-tight">Broker <span className="font-semibold">Network</span></h1>
-            <p className="text-white/50 mt-2">Connect with verified institutional brokers across India.</p>
+            <p className="text-white/50 mt-2">Connect with institutional brokers across India.</p>
           </div>
           
           <div className="flex gap-4 w-full md:w-auto">
@@ -104,8 +105,8 @@ export default function NetworkPage() {
                       {(profile.full_name || "B")[0]}
                     </div>
                   )}
-                  {profile.rera_number && (
-                    <div className="absolute -bottom-1 -right-1 bg-[#D4AF37] rounded-full p-1 border-2 border-[#0a0f16]" title="RERA Verified">
+                  {isVerifiedBroker(profile) && (
+                    <div className="absolute -bottom-1 -right-1 bg-[#D4AF37] rounded-full p-1 border-2 border-[#0a0f16]" title="Verified broker">
                       <ShieldCheck className="w-3 h-3 text-[#0a0f16]" />
                     </div>
                   )}

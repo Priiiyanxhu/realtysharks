@@ -3,6 +3,32 @@ import { jsPDF } from 'jspdf';
 import QRCode from 'qrcode';
 import { supabase } from './supabase/client';
 
+// Listing and profile fields are authored by OTHER users, so they must never be
+// interpolated into markup unescaped (stored XSS via innerHTML).
+const HTML_ESCAPES: Record<string, string> = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
+};
+
+const escapeHtml = (value: unknown): string =>
+  String(value ?? '').replace(/[&<>"']/g, (char) => HTML_ESCAPES[char]);
+
+// Only https images served from Supabase storage may be embedded (mirrors the
+// remotePatterns allowlist in next.config.ts). Anything else is dropped.
+const safeImageUrl = (value: unknown): string | null => {
+  if (typeof value !== 'string') return null;
+  try {
+    const url = new URL(value);
+    if (url.protocol !== 'https:' || !url.hostname.endsWith('.supabase.co')) return null;
+    return url.toString();
+  } catch {
+    return null;
+  }
+};
+
 export const generatePdfFlyer = async (listingId: string | number) => {
   try {
     // 1. Fetch full listing data and broker profile
@@ -29,13 +55,14 @@ export const generatePdfFlyer = async (listingId: string | number) => {
     container.style.overflow = 'hidden';
     
     // Add content
-    const imageUrl = Array.isArray(listing.images) && listing.images.length > 0 ? listing.images[0] : null;
-    const priceFormatted = listing.price_inr >= 10000000 
-      ? `Rs ${(listing.price_inr / 10000000).toFixed(2)} Cr` 
-      : `Rs ${listing.price_inr.toLocaleString('en-IN')}`;
+    const imageUrl = Array.isArray(listing.images) && listing.images.length > 0 ? safeImageUrl(listing.images[0]) : null;
+    const priceInr = Number(listing.price_inr) || 0;
+    const priceFormatted = priceInr >= 10000000 
+      ? `Rs ${(priceInr / 10000000).toFixed(2)} Cr` 
+      : `Rs ${priceInr.toLocaleString('en-IN')}`;
 
     // 3. Generate QR Code
-    const qrUrl = `https://realtysharks.in/messages?brokerId=${profile.auth_id}&listingId=${listing.id}&title=${encodeURIComponent(listing.title)}&price=${encodeURIComponent(priceFormatted)}&location=${encodeURIComponent(listing.city)}`;
+    const qrUrl = `https://realtysharks.in/messages?brokerId=${profile?.auth_id ?? listing.broker_id}&listingId=${listing.id}&title=${encodeURIComponent(listing.title)}&price=${encodeURIComponent(priceFormatted)}&location=${encodeURIComponent(listing.city)}`;
     const qrDataUrl = await QRCode.toDataURL(qrUrl, { margin: 1, width: 80, color: { dark: '#050505', light: '#FFFFFF' } });
 
     container.innerHTML = `
@@ -46,15 +73,15 @@ export const generatePdfFlyer = async (listingId: string | number) => {
           <p style="margin: 5px 0 0 0; font-size: 14px; opacity: 0.8;">Exclusive Institutional Network</p>
         </div>
         <div style="text-align: right;">
-          <h2 style="margin: 0; font-size: 24px;">${profile?.agency_name || 'Verified Broker'}</h2>
-          <p style="margin: 5px 0 0 0; font-size: 14px; opacity: 0.8;">${profile?.full_name || ''}</p>
+          <h2 style="margin: 0; font-size: 24px;">${escapeHtml(profile?.agency_name || 'Independent')}</h2>
+          <p style="margin: 5px 0 0 0; font-size: 14px; opacity: 0.8;">${escapeHtml(profile?.full_name || '')}</p>
         </div>
       </div>
 
       <!-- Hero Image -->
       ${imageUrl ? `
       <div style="width: 100%; height: 450px; background-color: #f1f1f1; overflow: hidden; position: relative;">
-        <img src="${imageUrl}" crossorigin="anonymous" style="width: 100%; height: 100%; object-fit: cover;" />
+        <img src="${escapeHtml(imageUrl)}" crossorigin="anonymous" style="width: 100%; height: 100%; object-fit: cover;" />
         ${listing.direct_mandate_only ? `
         <div style="position: absolute; top: 20px; left: 20px; background-color: #EF4444; color: white; padding: 10px 20px; font-weight: bold; border-radius: 4px; font-size: 16px;">
           DIRECT MANDATE
@@ -66,13 +93,13 @@ export const generatePdfFlyer = async (listingId: string | number) => {
       <div style="padding: 40px;">
         <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 30px;">
           <div style="flex: 1;">
-            <p style="margin: 0; color: #10B981; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; font-size: 14px;">${listing.property_type}</p>
-            <h1 style="margin: 10px 0; font-size: 36px; line-height: 1.2;">${listing.title}</h1>
-            <p style="margin: 0; font-size: 18px; color: #555;">${listing.locality || listing.city}, ${listing.city}</p>
+            <p style="margin: 0; color: #10B981; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; font-size: 14px;">${escapeHtml(listing.property_type)}</p>
+            <h1 style="margin: 10px 0; font-size: 36px; line-height: 1.2;">${escapeHtml(listing.title)}</h1>
+            <p style="margin: 0; font-size: 18px; color: #555;">${escapeHtml(listing.locality || listing.city)}, ${escapeHtml(listing.city)}</p>
           </div>
           <div style="text-align: right;">
             <p style="margin: 0; font-size: 14px; color: #888;">Asking Price</p>
-            <h2 style="margin: 5px 0; font-size: 32px; color: #000;">${priceFormatted}</h2>
+            <h2 style="margin: 5px 0; font-size: 32px; color: #000;">${escapeHtml(priceFormatted)}</h2>
           </div>
         </div>
 
@@ -80,22 +107,22 @@ export const generatePdfFlyer = async (listingId: string | number) => {
         <div style="display: flex; justify-content: space-between; margin-bottom: 40px;">
           <div style="text-align: center; flex: 1; border-right: 1px solid #eee;">
             <p style="margin: 0; font-size: 14px; color: #888;">Configuration</p>
-            <p style="margin: 5px 0 0 0; font-size: 20px; font-weight: bold;">${listing.configuration}</p>
+            <p style="margin: 5px 0 0 0; font-size: 20px; font-weight: bold;">${escapeHtml(listing.configuration)}</p>
           </div>
           <div style="text-align: center; flex: 1; border-right: 1px solid #eee;">
             <p style="margin: 0; font-size: 14px; color: #888;">Area (sq.ft)</p>
-            <p style="margin: 5px 0 0 0; font-size: 20px; font-weight: bold;">${listing.square_feet?.toLocaleString() || 'N/A'}</p>
+            <p style="margin: 5px 0 0 0; font-size: 20px; font-weight: bold;">${escapeHtml(Number(listing.square_feet)?.toLocaleString() || 'N/A')}</p>
           </div>
           <div style="text-align: center; flex: 1;">
             <p style="margin: 0; font-size: 14px; color: #888;">Location</p>
-            <p style="margin: 5px 0 0 0; font-size: 20px; font-weight: bold;">${listing.city}</p>
+            <p style="margin: 5px 0 0 0; font-size: 20px; font-weight: bold;">${escapeHtml(listing.city)}</p>
           </div>
         </div>
 
         <!-- Description -->
         <div>
           <h3 style="font-size: 20px; margin-bottom: 15px; color: #333;">Property Details</h3>
-          <p style="font-size: 16px; line-height: 1.6; color: #555; white-space: pre-wrap;">${listing.description || 'No description provided.'}</p>
+          <p style="font-size: 16px; line-height: 1.6; color: #555; white-space: pre-wrap;">${escapeHtml(listing.description || 'No description provided.')}</p>
         </div>
       </div>
 
@@ -103,15 +130,15 @@ export const generatePdfFlyer = async (listingId: string | number) => {
       <div style="position: absolute; bottom: 0; left: 0; right: 0; background-color: #f8f9fa; padding: 30px; border-top: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
         <div>
           <p style="margin: 0; font-size: 14px; color: #888;">Contact Broker</p>
-          <p style="margin: 5px 0 0 0; font-size: 18px; font-weight: bold;">${profile?.full_name || 'Verified Broker'}</p>
-          <p style="margin: 5px 0 0 0; font-size: 16px; color: #555;">${profile?.agency_name || ''}</p>
+          <p style="margin: 5px 0 0 0; font-size: 18px; font-weight: bold;">${escapeHtml(profile?.full_name || 'Broker')}</p>
+          <p style="margin: 5px 0 0 0; font-size: 16px; color: #555;">${escapeHtml(profile?.agency_name || '')}</p>
         </div>
         <div style="display: flex; align-items: center; gap: 15px;">
           <div style="text-align: right;">
             <p style="margin: 0; font-size: 12px; color: #888;">Scan to Chat on</p>
             <p style="margin: 5px 0 0 0; font-size: 14px; font-weight: bold; color: #10B981;">RealtySharks Network</p>
           </div>
-          <img src="${qrDataUrl}" style="width: 60px; height: 60px; border-radius: 4px;" />
+          <img src="${escapeHtml(qrDataUrl)}" style="width: 60px; height: 60px; border-radius: 4px;" />
         </div>
       </div>
     `;

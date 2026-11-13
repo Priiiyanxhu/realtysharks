@@ -13,7 +13,18 @@ interface ChatAreaProps {
   userId: string | null;
   taggedListing: { id: string; title: string; price: string; location: string } | null;
   onClearTaggedListing: () => void;
-  onSendMessage: (content: string) => void;
+  onSendMessage: (content: string) => Promise<boolean | void> | boolean | void;
+  errorMessage?: string | null;
+  onDismissError?: () => void;
+  /** True when the signed-in user has blocked the other broker. */
+  isPartnerBlocked?: boolean;
+  blockPending?: boolean;
+  onRequestBlock?: () => void;
+  onUnblock?: () => void;
+  onViewProfile?: () => void;
+  onReport?: () => void;
+  onClearChat?: () => void;
+  canClearChat?: boolean;
   onBackToMobileList: () => void;
   isVisible: boolean;
 }
@@ -25,6 +36,16 @@ export function ChatArea({
   taggedListing,
   onClearTaggedListing,
   onSendMessage,
+  errorMessage,
+  onDismissError,
+  isPartnerBlocked = false,
+  blockPending = false,
+  onRequestBlock,
+  onUnblock,
+  onViewProfile,
+  onReport,
+  onClearChat,
+  canClearChat,
   onBackToMobileList,
   isVisible
 }: ChatAreaProps) {
@@ -47,7 +68,16 @@ export function ChatArea({
             agentName={activeConversation.name}
             agentCompany={activeConversation.company}
             agentAvatar={activeConversation.avatar || undefined}
-            propertyTitle={taggedListing?.title} 
+            propertyTitle={taggedListing?.title}
+            propertyId={taggedListing?.id}
+            isBlocked={isPartnerBlocked}
+            blockPending={blockPending}
+            onBlock={onRequestBlock}
+            onUnblock={onUnblock}
+            onViewProfile={onViewProfile}
+            onReport={onReport}
+            onClearChat={onClearChat}
+            canClearChat={canClearChat}
           />
           
           <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 flex flex-col">
@@ -56,9 +86,11 @@ export function ChatArea({
                 <div className="w-16 h-16 bg-[#D4AF37]/10 rounded-full flex items-center justify-center mb-4 border border-[#D4AF37]/20">
                   <Building className="w-8 h-8 text-[#D4AF37]" />
                 </div>
-                <h3 className="text-white font-semibold text-lg mb-2">Secure Direct Mandate</h3>
-                <p className="text-gray-500 text-sm max-w-sm">
-                  This is an end-to-end encrypted channel. Send your inquiry below to initiate the mandate process.
+                <h3 className="text-white font-semibold text-lg mb-2">Direct Mandate</h3>
+                {/* Say only what the database enforces (messages are readable by the two participants only, via RLS).
+                    Messages are plain text in Postgres, not client-side encrypted, so do not claim encryption. */}
+                <p className="text-gray-500 text-sm max-w-sm [overflow-wrap:anywhere]">
+                  {`This is a direct conversation between you and ${activeConversation.name}. Other brokers can't see it. Send your inquiry below to initiate the mandate process.`}
                 </p>
               </div>
             ) : (
@@ -76,22 +108,53 @@ export function ChatArea({
           
           <div className="bg-[#0A0D12] border-t border-white/10">
             {taggedListing && (
-              <div className="px-4 py-3 bg-[#D4AF37]/5 border-b border-white/5 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-[#D4AF37]/20 rounded-md flex items-center justify-center border border-[#D4AF37]/30">
+              <div className="px-4 py-3 bg-[#D4AF37]/5 border-b border-white/5 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 shrink-0 bg-[#D4AF37]/20 rounded-md flex items-center justify-center border border-[#D4AF37]/30">
                     <Building className="w-4 h-4 text-[#D4AF37]" />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-xs font-bold text-[#D4AF37] uppercase tracking-widest mb-0.5">Tagging Property</p>
-                    <p className="text-sm font-medium text-white leading-none">{taggedListing.title} <span className="text-gray-500 font-normal ml-2">₹ {taggedListing.price}</span></p>
+                    <p className="text-sm font-medium text-white leading-none [overflow-wrap:anywhere]">{taggedListing.title} <span className="text-gray-500 font-normal ml-2">₹ {taggedListing.price}</span></p>
                   </div>
                 </div>
-                <button onClick={onClearTaggedListing} className="text-xs text-gray-400 hover:text-white underline">
+                <button onClick={onClearTaggedListing} className="shrink-0 text-xs text-gray-400 hover:text-white underline">
                   Remove Tag
                 </button>
               </div>
             )}
-            <ChatInput onSend={onSendMessage} />
+            {errorMessage && (
+              <div
+                role="alert"
+                className="px-4 py-3 bg-red-500/10 border-b border-red-500/20 flex items-start justify-between gap-3"
+              >
+                <p className="text-sm text-red-300">{errorMessage}</p>
+                {onDismissError && (
+                  <button
+                    onClick={onDismissError}
+                    className="text-xs text-red-300/80 hover:text-red-200 underline shrink-0"
+                  >
+                    Dismiss
+                  </button>
+                )}
+              </div>
+            )}
+            {isPartnerBlocked ? (
+              <div className="p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm text-gray-400">
+                  You blocked {activeConversation.name}. Neither of you can send new messages until you unblock them.
+                </p>
+                <button
+                  onClick={onUnblock}
+                  disabled={blockPending || !onUnblock}
+                  className="shrink-0 rounded-full border border-white/15 px-5 py-2.5 text-sm font-medium text-white hover:bg-white/5 transition-colors disabled:opacity-50"
+                >
+                  {blockPending ? "Unblocking…" : `Unblock ${activeConversation.name}`}
+                </button>
+              </div>
+            ) : (
+              <ChatInput onSend={onSendMessage} />
+            )}
           </div>
         </>
       ) : (

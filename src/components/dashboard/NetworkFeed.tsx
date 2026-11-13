@@ -5,6 +5,7 @@ import { Activity } from "lucide-react";
 import { FeedItem, FeedItemProps } from "./../ui/FeedItem";
 import { supabase } from "@/utils/supabase/client";
 import { formatDistanceToNow } from "date-fns";
+import { brokerProfileHref } from "@/utils/brokerLink";
 
 interface ProfileNode {
   full_name: string | null;
@@ -20,6 +21,7 @@ interface ListingRecord {
 
 interface RequirementRecord {
   id: string;
+  broker_id: string | null;
   property_type: string | null;
   min_budget: number;
   max_budget: number;
@@ -59,8 +61,8 @@ export function NetworkFeed() {
           .limit(5);
 
         const { data: recentReqs } = await supabase
-          .from('requirements')
-          .select('id, property_type, budget_min_inr, budget_max_inr, city, created_at, profiles(full_name)')
+          .from('requirements_feed')
+          .select('id, broker_id, property_type, budget_min_inr, budget_max_inr, city, created_at, profiles(full_name)')
           .order('created_at', { ascending: false })
           .limit(5);
 
@@ -97,7 +99,8 @@ export function NetworkFeed() {
               iso_timestamp: r.created_at,
               created_at: new Date(r.created_at).getTime(),
               isNew: false,
-              href: `/network/${r.id}` 
+              // The profile page looks the id up as a broker, so link to the requirement's broker (r.id is a requirement id).
+              href: brokerProfileHref(r.broker_id, 'requirements') ?? undefined
             });
           });
         }
@@ -145,7 +148,7 @@ export function NetworkFeed() {
             timestamp: new Date().toISOString(),
             iso_timestamp: new Date().toISOString(),
             isNew: true,
-            href: `/network/${newDoc.id}`,
+            href: brokerProfileHref(newDoc.broker_id, 'requirements') ?? undefined,
             created_at: Date.now()
           };
           return [newItem, ...prev].slice(0, 15);

@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/utils/supabase/client";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { PropertyCard } from "@/components/ui/PropertyCard";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { MapPin, ShieldCheck, Briefcase, MessageSquare } from "lucide-react";
+import { isVerifiedBroker } from "@/utils/verification";
 
 export default function PublicBrokerProfile() {
   const params = useParams();
@@ -17,7 +18,11 @@ export default function PublicBrokerProfile() {
   const [listings, setListings] = useState<any[]>([]);
   const [requirements, setRequirements] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'listings' | 'requirements'>('listings');
+  // ?tab=requirements opens the Requirements tab (the Network Feed links here for requirement items).
+  const searchParams = useSearchParams();
+  const [activeTab, setActiveTab] = useState<'listings' | 'requirements'>(
+    searchParams.get('tab') === 'requirements' ? 'requirements' : 'listings'
+  );
 
   useEffect(() => {
     if (!brokerId) return;
@@ -47,7 +52,7 @@ export default function PublicBrokerProfile() {
 
         // Fetch Active Requirements
         const { data: reqData } = await supabase
-          .from('requirements')
+          .from('requirements_feed')
           .select('*')
           .eq('broker_id', brokerId)
           .eq('is_active', true)
@@ -97,7 +102,7 @@ export default function PublicBrokerProfile() {
         <GlassCard className="p-8 md:p-10 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-[#D4AF37]/10 to-transparent" />
           
-          <div className="relative z-10 flex flex-col md:flex-row items-center md:items-start gap-8">
+          <div className="relative z-10 flex flex-col lg:flex-row items-center lg:items-start gap-8">
             <div className="relative w-32 h-32 rounded-full bg-slate-800 border-4 border-[#0a0f16] shadow-xl overflow-hidden shrink-0">
               {profile.avatar_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -107,25 +112,25 @@ export default function PublicBrokerProfile() {
                   {(profile.full_name || "B")[0]}
                 </div>
               )}
-              {profile.rera_number && (
-                <div className="absolute bottom-1 right-1 bg-[#D4AF37] rounded-full p-1.5 border-2 border-[#0a0f16]" title="RERA Verified">
+              {isVerifiedBroker(profile) && (
+                <div className="absolute bottom-1 right-1 bg-[#D4AF37] rounded-full p-1.5 border-2 border-[#0a0f16]" title="Verified broker">
                   <ShieldCheck className="w-4 h-4 text-[#0a0f16]" />
                 </div>
               )}
             </div>
 
-            <div className="flex-1 text-center md:text-left space-y-4">
+            <div className="flex-1 text-center lg:text-left space-y-4">
               <div>
-                <h1 className="text-3xl font-black text-white tracking-tighter flex items-center justify-center md:justify-start gap-2">
+                <h1 className="text-3xl font-black text-white tracking-tighter flex items-center justify-center lg:justify-start gap-2">
                   {profile.full_name}
-                  {profile.rera_number && <ShieldCheck className="w-5 h-5 text-[#D4AF37]" />}
+                  {isVerifiedBroker(profile) && <ShieldCheck className="w-5 h-5 text-[#D4AF37]" />}
                 </h1>
-                <p className="text-[#D4AF37] font-bold mt-1 flex items-center justify-center md:justify-start gap-1.5 text-xs uppercase tracking-widest">
+                <p className="text-[#D4AF37] font-bold mt-1 flex items-center justify-center lg:justify-start gap-1.5 text-xs uppercase tracking-widest">
                   <Briefcase className="w-4 h-4" /> {profile.agency_name}
                 </p>
               </div>
 
-              <div className="flex flex-wrap justify-center md:justify-start gap-3">
+              <div className="flex flex-wrap justify-center lg:justify-start gap-3">
                 <span className="text-sm text-white/70 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10 uppercase tracking-wide">
                   {profile.role || "Broker"}
                 </span>
@@ -189,7 +194,7 @@ export default function PublicBrokerProfile() {
                     location={listing.city}
                     bhk={listing.configuration}
                     imageUrl={listing.images?.[0] || ""}
-                    isVerified={!!profile.rera_number}
+                    isVerified={isVerifiedBroker(profile)}
                     agent={{
                       name: profile.full_name,
                       company: profile.agency_name,
@@ -218,7 +223,7 @@ export default function PublicBrokerProfile() {
                         <p className="text-[#D4AF37] font-medium mt-1">
                           Budget: ₹{((req.budget_min_inr || 0)/10000000).toFixed(1)}Cr - ₹{((req.budget_max_inr || 0)/10000000).toFixed(1)}Cr
                         </p>
-                        <p className="text-sm text-white/60 mt-3 line-clamp-2 max-w-3xl">{req.details}</p>
+                        <p className="text-sm text-white/60 mt-3 line-clamp-2 max-w-3xl">{req.details ?? (req.privacy_level && req.privacy_level !== "Standard" ? "Client details are confidential." : "")}</p>
                       </div>
                       <span className="text-xs text-[#D4AF37] bg-[#D4AF37]/10 px-3 py-1 rounded-full font-bold uppercase tracking-widest">
                         Active

@@ -1,12 +1,19 @@
 {
   "name": "realtysharks",
   "version": "0.1.0",
+  "description": "Mobile-first B2B real-estate network for Indian brokers: listings, buyer requirements, matching and direct chat.",
+  "license": "AGPL-3.0-only",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Priiiyanxhu/realtysharks.git"
+  },
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "node --experimental-strip-types --test \"src/**/*.test.ts\" \"scripts/**/*.test.mjs\""
   },
   "dependencies": {
     "@capacitor/android": "^8.4.0",

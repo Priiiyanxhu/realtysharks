@@ -5,6 +5,7 @@ import { PropertyCard } from "@/components/ui/PropertyCard";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { supabase } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
+import { isVerifiedBroker } from "@/utils/verification";
 
 interface MatchProperty {
   id: string;
@@ -14,7 +15,7 @@ interface MatchProperty {
   city: string;
   configuration: string;
   images: string[];
-  profiles?: { id?: string; full_name: string; agency_name?: string; avatar_url?: string } | { id?: string; full_name: string; agency_name?: string; avatar_url?: string }[] | null;
+  profiles?: { id?: string; full_name: string; agency_name?: string; avatar_url?: string; verified?: boolean } | { id?: string; full_name: string; agency_name?: string; avatar_url?: string; verified?: boolean }[] | null;
 }
 
 export function AiMatchesGrid() {
@@ -52,7 +53,7 @@ export function AiMatchesGrid() {
           .from("listings")
           .select(`
             *,
-            profiles!listings_broker_id_fkey (id, full_name, agency_name, avatar_url)
+            profiles!listings_broker_id_fkey (id, full_name, agency_name, avatar_url, verified)
           `)
           .eq("is_active", true)
           .neq("broker_id", userId); // Don't match own listings
@@ -186,7 +187,7 @@ export function AiMatchesGrid() {
               location={match.city}
               bhk={match.configuration}
               imageUrl={Array.isArray(match.images) && match.images.length > 0 ? match.images[0] : ""}
-              isVerified={true} // High match score acts as verified
+              isVerified={isVerifiedBroker(match.profiles)} // a high match score says nothing about the broker
               agent={{
                 id: Array.isArray(match.profiles) ? match.profiles[0]?.id : match.profiles?.id,
                 name: Array.isArray(match.profiles) ? match.profiles[0]?.full_name : match.profiles?.full_name || "Unknown Broker",

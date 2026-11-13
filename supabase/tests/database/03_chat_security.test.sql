@@ -262,6 +262,16 @@ VALUES
     pg_catalog.now(), pg_catalog.now()
   );
 
+-- Starting a new conversation requires completed onboarding
+-- (20261103120600_restrict_chat_creation_and_blocks.sql).
+UPDATE public.profiles
+   SET onboarded = true
+ WHERE id IN (
+   '00000000-0000-4000-8000-000000000401',
+   '00000000-0000-4000-8000-000000000402',
+   '00000000-0000-4000-8000-000000000403'
+ );
+
 SET LOCAL ROLE authenticated;
 SET LOCAL "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000401';
 

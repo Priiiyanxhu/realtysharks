@@ -56,9 +56,9 @@ export function FeedItem({ type, title, description, timestamp, users, isNew, hr
       </div>
 
       <GlassCard className={`p-4 md:p-5 transition-colors duration-300 ${isNew ? 'border-[#D4AF37]/30 shadow-[0_0_15px_rgba(212,175,55,0.05)]' : 'border-white/5 hover:border-white/10'}`}>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-          <h4 className="text-white font-medium text-sm sm:text-base leading-tight">{title}</h4>
-          <span className="text-[10px] uppercase tracking-widest font-mono text-white/40 shrink-0">{timestamp}</span>
+        <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center justify-between gap-2 mb-2">
+          <h4 className="text-white font-medium text-sm sm:text-base leading-tight [overflow-wrap:anywhere]">{title}</h4>
+          <span className="text-[10px] uppercase tracking-widest font-mono text-white/40">{timestamp}</span>
         </div>
         
         <p className="text-sm text-white/60 leading-relaxed mb-4">

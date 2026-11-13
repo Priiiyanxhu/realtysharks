@@ -1,10 +1,51 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
+import { createSupabaseServerClient, getVerifiedUserId } from '@/utils/supabase/server';
+import { interpretQuotaResult } from '@/utils/aiQuota';
+
+const MAX_PROMPT_LENGTH = 4000;
 
 export async function POST(req: Request) {
-  try {
-    const { prompt } = await req.json();
+  // Defense in depth: don't rely on src/proxy.ts alone to gate paid API usage.
+  const userId = await getVerifiedUserId();
+  if (!userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
+  let prompt: unknown;
+  try {
+    ({ prompt } = await req.json());
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+  }
+
+  if (typeof prompt !== 'string' || prompt.trim().length === 0) {
+    return NextResponse.json({ error: 'A prompt is required' }, { status: 400 });
+  }
+  if (prompt.length > MAX_PROMPT_LENGTH) {
+    return NextResponse.json({ error: 'Prompt is too long' }, { status: 413 });
+  }
+
+  // Spend a unit of quota only for a request that is otherwise valid, and before
+  // the paid call. Identity comes from the caller's own session (auth.uid() in the
+  // database), so there is nothing to forge and no service-role key is needed.
+  // Fails closed: if the quota cannot be checked, Gemini is not called.
+  const supabase = await createSupabaseServerClient();
+  const { data: quotaData, error: quotaError } = await supabase.rpc('consume_ai_quota');
+  const quota = interpretQuotaResult(quotaData, quotaError);
+
+  if (quota.kind === 'unavailable') {
+    console.error('AI quota check failed.', { code: quotaError?.code });
+    return NextResponse.json({ error: quota.message }, { status: quota.status });
+  }
+  if (quota.kind === 'limited') {
+    return NextResponse.json(
+      { error: quota.message, retryAfterSeconds: quota.retryAfterSeconds },
+      { status: quota.status, headers: { 'Retry-After': String(quota.retryAfterSeconds) } }
+    );
+  }
+
+  try {
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
     
     const systemPrompt = `

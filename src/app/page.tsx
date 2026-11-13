@@ -34,7 +34,7 @@ export default function Home() {
               <span className="text-brand-accent">top-tier brokers.</span>
             </h1>
             <p className="text-base text-slate-500 font-light leading-relaxed px-2">
-              Connect, collaborate, and close deals faster on our verified platform.
+              Connect, collaborate, and close deals faster with brokers across India.
             </p>
           </div>
 
